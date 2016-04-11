@@ -1,0 +1,9 @@
+
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=true
+Icon[en_GB]=/home/adiab/Desktop/scan_log.png
+Name[en_GB]=autoScan
+Exec=/home/adiab/autoscan/autoscan.sh
+Name=autoScan
