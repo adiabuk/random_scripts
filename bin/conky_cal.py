@@ -22,7 +22,7 @@ for month in months:
     regex = '(?<= )%s(?= )|(?<=\n)%s(?= )|(?<= )%s(?=\n)' % (
         localtime[2], localtime[2], localtime[2])
     if month == 0:
-        replace = '${color1}%s${color white}' % localtime[2]
+        replace = '${color1}%s${color2}' % localtime[2]
         newCal = re.sub(regex, replace, cal)
     else:
         newCal = cal
