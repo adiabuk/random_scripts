@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# Simple script to enable/disable external screen running on DP-2
+# Simple script to enable/disable external screen running on HDMI1
 
-xrandr |grep -q DP-2.*1280
+xrandr |grep -q HDMI1.*1920
 if [[ $? -eq 0 ]]; then
-  xrandr --output DP-2 --off
+  xrandr --output HDMI1 --off
 else
-  xrandr --output DP-2 --auto --mode 1280x1024 --pos 1280x0
+  xrandr --output HDMI1 --auto --mode 1920x1080 --pos 1280x0
 fi
