@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<p>A script on this page starts this clock:</p>
+<p id="demo"></p>
+
+<script>
+var myVar = setInterval(function(){ myTimer() }, 1000);
+
+function myTimer() {
+    var d = new Date();
+    var t = d.toLocaleTimeString();
+    document.getElementById("demo").innerHTML = t;
+}
+
+function myTimer2() {
+    $differenceFormat='Years:%Y,Months:%M,Days:%d,Hours:%H,Minutes:%i,Seconds:%s';
+    //$datetime1 = date_create(strftime("%F %T"));
+    $datetime2 = date_create('2015-09-30');
+    //$interval = date_diff($datetime1, $datetime2);
+    // var t=$interval->format($differenceFormat);
+    var t = "hello" ;
+    document.getElementById("demo").innerHTML = t;
+}
+
+</script>
+
+</body>
+</html>
+

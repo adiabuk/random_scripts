@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<meta content='width=device-width, initial-scale=1' name='viewport'/>
+<body>
+
+<p>Secret happpiness numbers:</p>
+<p id="demo"></p>
+
+<script>
+var myVar = setInterval(function(){ dateDiff() }, 1000);
+
+function myTimer() {
+    var d = new Date();
+    var t = d.toLocaleTimeString();
+    document.getElementById("demo").innerHTML = t;
+}
+
+function dateDiff() {
+    var date1 = new Date("7/11/2010");
+    var date1 = new Date();
+    var date2 = new Date("09/30/2015");
+    var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+    var seconds = timeDiff/1000;
+    var minutes = seconds/60;
+    var hours = minutes/60;
+    var days = hours/24;
+    var weeks = days/7;
+    var months = weeks/4.3
+    var years = months/12;
+    var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
+    document.getElementById("demo").innerHTML = "seconds: " + Number(seconds).toFixed(0)
+					      + "<br> minutes: " + Number(minutes).toFixed(2) 
+					      + "<br> hours: " + Number(hours).toFixed(2)
+					      + "<br> days: " + Number(days).toFixed(2)
+					      + "<br> weeks: " + Number(weeks).toFixed(2)
+					      + "<br> months: " + Number(months).toFixed(2)
+					      + "<br> years: " + Number(years).toFixed(2);
+
+}
+</script>
+
+</body>
+</html>
+
