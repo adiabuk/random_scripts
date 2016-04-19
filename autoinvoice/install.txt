@@ -1,0 +1,7 @@
+requirements:
+Debian or debian-based OS
+
+unoconv
+openoffice.org-java-common
+libtext-csv-perl
+
