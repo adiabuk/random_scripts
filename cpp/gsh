@@ -1,0 +1,11 @@
+#!/bin/env bash
+
+# compile and run simple C/C++ code
+# provide filename as first argument
+
+filename=$1
+
+prefix=`echo $filename|awk -F. {'print $1'}`;
+
+g++ $filename -o ./${prefix}.o
+./${prefix}.o
