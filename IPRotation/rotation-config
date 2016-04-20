@@ -1,0 +1,7 @@
+# Which interface to use for ip rotation
+interface=eth1
+
+# How often to rotate IPs (minutes)
+interval=5
+
+

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+if [ "x$1" != "x--" ]; then
+  $0 -- 1> /dev/null 2> /dev/null &
+  exit 0
+fi
+
+if test -e /etc/sysconfig/rotation-config ; then
+  . /etc/sysconfig/rotation-config
+fi
+
+while true; do
+
+  for ipadd in `cat /etc/sysconfig/rotation-ips|grep -v "#"`; do
+    echo $i;echo "name:$0"
+    ifconfig $interface $ipadd
+    logger -t "rotation[$$]" IP address changed to: $ipadd
+    sleep ${interval}m ;
+  done
+
+done

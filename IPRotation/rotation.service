@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+#
+# chkconfig: 2345 85 15
+# description: Rotates the IP address of eth0 \
+# processname: rotation
+# config: /etc/sysconfig/rotation-config
+# source: /etc/sysconfig/rotation-config
+# Author: AmroxLtd: http://www.amroxservices.com
+
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+if test -e /etc/sysconfig/rotation-config ; then
+    . /etc/sysconfig/rotation-config
+fi
+
+
+
+start() {
+
+  echo "Starting IP Rotation: "
+  daemon /usr/local/bin/rotation
+  [ $? -eq 0 ] && touch /var/lock/subsys/rotation
+}
+
+stop() {
+
+  echo "Shutting down IP Rotation: "
+  killproc rotation
+  [ $? -eq 0 ] && rm -f /var/lock/subsys/rotation
+
+}
+
+restart() {
+
+  stop
+  start
+
+}
+
+rhstatus() {
+
+  status rotation
+
+}
+
+case "$1" in
+  start)
+    [ ! -f /var/lock/subsys/rotation ] && start || echo "Already Running"
+  ;;
+  stop)
+    stop
+  ;;
+  status)
+    rhstatus
+  ;;
+  restart)
+    restart
+  ;;
+  reload)
+        reload
+        ;;
+  condrestart)
+    [ -f /var/lock/subsys/syslog ] && restart || :
+  ;;
+  *)
+    echo $"Usage: $0 {start|stop|status|restart|condrestart}"
+    exit 2
+esac
+
+exit $?
+
+
+
+if test -e /etc/sysconfig/iprot-config ; then
+  . /etc/sysconfig/iprot-config
+fi
+
+
+
+start() {
+  for ipadd in `cat /etc/sysconfig/ipaddresses`; do
+    echo $i;echo "name:$0"
+    ifconfig $interface $ipadd
+    logger -t "$0[$$]" IP address changed to: $ipadd
+    sleep 5;
+  done
+}
