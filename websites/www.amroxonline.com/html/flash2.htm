@@ -1,0 +1,61 @@
+<html>
+<head>
+<script type="text/javascript">
+
+// flash speed in milliseconds
+var rate = 500;
+
+// the three flash colors
+var Color1 = "#FF0000"
+var Color2 = "#00FF00"
+var Color3 = "#8080FF"
+
+// the color if/when turned off (no-flash color)
+var ColorX = "#FFFF00"
+
+// set this to true for auto start; else, false
+var DoIt = true
+
+// do not edit below this line
+// ---------------------------
+
+bV  = parseInt(navigator.appVersion)
+bNS = navigator.appName=="Netscape"
+bIE = navigator.appName=="Microsoft Internet Explorer"
+ok = false
+
+var i=0;
+function doFlashEmLink(){
+   ok =  true
+   if ((bNS && bV >= 5) || (bIE && bV >= 4)){
+      i++;
+      if (i==1) C = Color1
+      if (i==2) C = Color2
+      if (i==3) C = Color3
+      if (!DoIt) C = ColorX
+      if (bIE) FlashEm.style.color=C
+      if (bNS) document.getElementById('FlashEm').style.color = C
+      if (i > 2) i = 0
+      if (DoIt) timer=setTimeout('doFlashEmLink()', rate)
+   }
+}
+
+
+function doOnOff(a){
+   if (ok){
+      if (a =="off") {DoIt = false}
+      if ((a =="on")&&(!DoIt)) {
+          DoIt = true
+          doFlashEmLink()
+      }
+   }
+}
+
+</script>
+
+</head>
+<body onLoad="doFlashEmLink()">
+
+<a name="FlashEm" id="FlashEm" onClick="doOnOff('on')" href="http://www.csgnetwork.com" target="_blank">Click Heres</a>
+</body>
+</html>
