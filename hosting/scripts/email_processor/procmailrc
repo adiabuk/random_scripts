@@ -1,0 +1,6 @@
+VERBOSE=on
+LOGFILE=/var/log/procmail.log
+
+:0 c
+* ^To.*
+| /var/amrox/scripts/email_processor/process_email.pl
