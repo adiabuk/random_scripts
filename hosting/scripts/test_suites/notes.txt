@@ -1,0 +1,2 @@
+storealert, storeconfirmation, ssertConfirmation - for dialogbox
+chooseCanccelOnNextConfirmation
