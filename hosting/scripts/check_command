@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Warn if running certain commands on production hosts
+# Usage: redirect unsafe commands to alias and place global or local bashrc
+# eg. alias reboot='check_command'
+# On running the command, this script will be exectuted instead, and will
+# only proceed to run actual command if user inputs "y"
+# Warning emphasis is on hostname
+#
+# Author: Amro Diab
+# Date: 22/04/2011
+
+[[ -z $1 ]] && echo "Please specify command as first argument" && exit 2
+
+function seton() {
+
+$(tput setaf 1 bold)
+
+}
+
+echo
+read -p "WARNING: You are trying to execute: $(tput sgr 1 0)$1$(tput sgr0) on $(tput sgr 1 0)$HOSTNAME$(tput sgr0) - Continue (y/n)? " choice
+case "$choice" in
+  y|Y ) $@;;
+  * ) echo "Aborted";;
+esac
+
+
