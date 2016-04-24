@@ -1,0 +1,41 @@
+<VirtualHost *:80>
+	ServerAdmin %%%EMAIL%%%
+	ServerName  %%%HOSTNAME%%%
+	DocumentRoot /var/www/%%%USER%%%/htdocs
+	<Directory />
+		Options FollowSymLinks
+		AllowOverride None
+	</Directory>
+	<Directory /var/www/%%%USER%%%/htdocs>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+	</Directory>
+
+	ScriptAlias /cgi-bin/ /var/www/%%%USER%%%/cgi-bin/
+	<Directory "/var/www/%%%USER%%%/cgi-bin">
+		AllowOverride None
+		Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+		Order allow,deny
+		Allow from all
+	</Directory>
+
+	ErrorLog /var/www/%%%USER%%%/logs/error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog /var/www/%%%USER%%%/logs/access.log combined
+
+    Alias /doc/ "/usr/share/doc/"
+    <Directory "/usr/share/doc/">
+        Options Indexes MultiViews FollowSymLinks
+        AllowOverride None
+        Order deny,allow
+        Deny from all
+        Allow from 127.0.0.0/255.0.0.0 ::1/128
+    </Directory>
+
+</VirtualHost>

@@ -1,0 +1,48 @@
+source /etc/plat
+#MYSQLHOST="78.46.195.25"
+MYSQLHOST="3.3.3.3"
+MYSQLUSER="adiab"
+MYSQLPASSWD="password"
+VPSTABLE="Amrox_${PLAT}"
+#VPSTABLE="Amrox_${PLAT}2"
+PASSBIN="/var/amrox/bin/mkpasswd"
+AVAILABLEHOST="appovz02p"
+AVAILABLEEYEOS="avseye01"
+AVAILABLEHOSTID=4
+
+WEBHOSTID=4
+WEBVMID=125
+
+
+PLUGINSDIR="/var/amrox/scripts/nagios/plugins"
+
+function sqlc() {
+mysql -B --skip-column-names --user=$MYSQLUSER --password=$MYSQLPASSWD -h $MYSQLHOST $VPSTABLE -e "$1;"
+}
+
+function sqlo() {
+mysql -B --skip-column-names --user=$MYSQLUSER --password=$MYSQLPASSWD -h $MYSQLHOST OSC2_${PLAT} -e "$1;"
+}
+
+function sqld() {
+mysql -B --skip-column-names --user=$MYSQLUSER --password=$MYSQLPASSWD -h $MYSQLHOST Amrox_stag -e "$1;"
+}
+
+
+
+DATE=`date +"%d%m%y%H%M"`
+#HOSTNAME=`hostname`
+FILENAME="/var/backups/amrox/${hostname}-${PURPOSE}-${DATE}.tar.gz"
+
+function backup() {
+PURPOSE=$2
+DATE=`date +"%d%m%y%H%M"`
+HOSTNAME=`hostname`
+FILENAME="/var/backups/amrox/${HOSTNAME}-${PURPOSE}-${DATE}.tar.gz"
+
+read -p "Changes in update: " DATA
+
+tar zcvf $FILENAME  -X /var/amrox/etc/exclude.txt $1
+
+sqlc "insert into backup (data,date,server,purpose,filename) VALUES ('$DATA',now(),'$HOSTNAME','$PURPOSE','$FILENAME')"
+}                                                                                                                                                           

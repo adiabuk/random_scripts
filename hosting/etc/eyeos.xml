@@ -1,0 +1,11 @@
+<eyeUser>
+	<username>%%%USER%%%</username>
+	<password>%%%PASSHASH%%%</password>
+	<email>%%%EMAIL%%%</email>
+	<fullname>%%%NAME%%%</fullname>
+	<createDate>%%%START%%%</createDate>
+	<expirationDate>%%%FINISH%%%</expirationDate>
+	<disabled>0</disabled>
+	<group>public</group>
+	<lastLogin>0000000000</lastLogin>
+</eyeUser>

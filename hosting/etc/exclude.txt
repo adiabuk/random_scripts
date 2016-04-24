@@ -1,0 +1,3 @@
+/var/amrox/backups
+*.iso
+/var/amrox/tmp
