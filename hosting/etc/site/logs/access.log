@@ -1,0 +1,2 @@
+127.0.0.1 - - [01/Jun/2011:10:29:40 +0400] "GET / HTTP/1.1" 200 22 "-" "curl/7.18.2 (x86_64-pc-linux-gnu) libcurl/7.18.2 OpenSSL/0.9.8g zlib/1.2.3.3 libidn/1.8 libssh2/0.18"
+127.0.0.1 - - [01/Jun/2011:10:29:49 +0400] "GET /hello.txt HTTP/1.1" 200 4 "-" "curl/7.18.2 (x86_64-pc-linux-gnu) libcurl/7.18.2 OpenSSL/0.9.8g zlib/1.2.3.3 libidn/1.8 libssh2/0.18"
