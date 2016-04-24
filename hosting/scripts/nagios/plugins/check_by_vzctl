@@ -1,0 +1,360 @@
+#!/bin/bash
+
+# Container level monitoring (openvz)
+# Author: Amro Diab
+# Date: 04/08/2009
+
+# $1 = cmd string
+# $2 = ctid
+# $3 = Base
+# $4 = IP Address
+# $5 = username
+
+configfile="/var/amrox/etc/VPS-config"
+
+if [ -f $configfile ]; then
+  . $configfile
+
+else
+  echo "$configfile:No Such File or Directory"
+  exit 1
+fi
+
+function date2stamp() {
+  date --utc --date "$1" +%s
+
+}
+
+function dateDiff() {
+  case $1 in
+  -s) sec=1; shift;;
+  -m) sec=60; shift;;
+  -h) sec=3600; shift;;
+  -d) sec=86400; shift;;
+  *)  sec=86400;;
+  esac
+
+  date1=`date2stamp $1`
+  date2=`date2stamp $2`
+  diffsec=$(($date1-$date2))
+  echo $(($diffsec/$sec))
+}
+
+case $1 in
+
+
+newmail)  # Number of emails for a given user: normally: support & accounts
+  user=$3
+  messages=`sudo vzctl exec $2 /var/amrox/scripts/nagios/plugins/check_newmail $user`
+  echo "New Messages=$messages"
+  [[ -z "$messages" ]] && exit 3
+  [[ "$messages" -gt 2 ]] && exit 2
+  [[ "$messages" -gt 0 ]] && exit 1
+  exit 0
+
+;;
+
+
+customers) # number of signed up customers - for graphs only, no alert
+  number=`sudo vzctl exec $2 'source /etc/profile;source /var/amrox/etc/VPS-config;sqlo "select count(*) from customers"'`
+  echo "OK customers=$number|customers=$number"
+  exit 0
+;;
+
+
+amrox_perms)  # check read/write permissions for /var/amrox
+  sudo vzctl exec $2 /var/amrox/scripts/nagios/plugins/check_perms;
+  exit $?;;
+
+
+sql_repl)  # multi-master mysql replication
+  sudo vzctl exec $2 '/var/amrox/scripts/nagios/plugins/check_repl';
+  exit $? ;;
+
+
+xinit)  # snure xinit is running (for xvnc)
+  sudo vzctl exec $2 '/bin/pidof xinit';
+  exit $?;;
+
+
+mailq)  # check mail queue size
+  waiting=`sudo vzctl exec $2 'mailq | grep Total'` #2>/dev/null
+
+  if [[ "$3" == *redhat* ]]; then
+    queue=`echo $waiting|awk -F: {'print $2'}`
+  else
+    client=`echo $waiting|awk {'print $3'}|awk {'print $1'}`
+    server=`echo $waiting|awk {'print $6'}`
+    queue=`echo "scale=2; ${client}+${server}"|bc`
+  fi
+
+  echo Queue Size=$queue
+  [[ "$queue" -gt 3 ]] && exit 2
+  [[ "$queue" -gt 1 ]] && exit 1
+  exit 0
+
+;;
+
+
+nfs)  # check nfs share is mounted and is writable
+  sudo vzctl exec $2 'touch >> /var/amrox/tmp/.tmpfile'
+  if  [[ "$?" -ne 0 ]]; then
+
+    echo "FAILED to access NFS Share"
+    exit 2
+
+  else
+    echo "OK - NFS share available"
+  exit 0
+
+  fi
+;;
+
+
+webmin) # check if something is listening on webmin default port: 10000
+  nc -z $4 10000
+  if  [[ "$?" -ne 0 ]]; then
+
+    echo "Webmin is DOWN"
+    exit 2
+
+  else
+
+    echo "Webmin is OK"
+
+  fi
+
+;;
+
+
+amroxlog)  # check for one or more errors in log file
+  string1=$3
+  string2=$4
+  # log rotation should ensure file doesn't get too big
+  # so safe just to grep the entire file
+  sudo vzctl exec $2 "cat /var/log/amrox.log|grep $string1 |grep -q $string2"
+  if [[ "$?" -eq 0 ]]; then
+    echo "Error Found: $string1,$string2"; exit 2
+  else
+    echo "OK, no problems"; exit 0
+  fi
+;;
+
+
+bandwidth)  # check per container bandwidge usage from mysql records
+  ipaddress=$4
+  ipid=`sqlc "SELECT ip_ID from ip where ip_address='$ipaddress'"`
+  var=`sqlc "select live_datemodified from master_live where ip_id='$ipid'"`
+  now=`sqlc "select date_sub(now(),interval -4 hour)"`
+
+  current=`sqlc "select sum(bytes) from traffic where ipaddress='$ipaddress' and measuringtime BETWEEN '$var' and '$now'"`
+  maximum=`sqlc "select  bandwidth.bandwidth_bytes from bandwidth right join master_live on bandwidth.bandwidth_ID=master_live.bandwidth_id where ip_id=$ipid"`
+  percent=$(echo  " scale=2; $current*100/$maximum" | bc)
+
+  percentwhole=`printf "%0.f\n" $percent`
+
+  if [ -n "$percentwhole" ]; then
+    echo "byte usage=${current}/${maximum}:${percent}%|'percentage'=${percent}"
+
+      [[ "$percentwhole" -gt  90 ]] && exit 2
+      [[ "$percentwhole" -gt  80 ]] && exit 1
+      [[ "$percentwhole" -gt  -1 ]] && exit 0
+
+  else
+    echo "No MySQL Entry"
+    exit 3
+
+  fi
+;;
+
+
+sendmail)  # look for sertain errors in maillog that suggest issues with
+           # incoming/outgoing mail
+  string1="unable"
+  string2="qualify"
+  vzctl exec $2 "cat /var/log/maillog|grep $string1|grep -q $string2"
+  if [[ "$?" -eq 0 ]]; then
+    echo "Error found-$result"
+    exit 2
+  else
+    echo "No errors-$result"
+    exit 0
+  fi
+  exit $code
+
+;;
+
+
+load)  # standard load average check
+
+  allload=`sudo vzctl exec $2 uptime |awk -F'load average:' {'print $2'}`
+  second=`echo $allload | awk -F, '{print $2}'`
+  if [[ "$second" > 2 ]]; then
+
+    echo "Load Average max reached: $allload"
+    exit 2
+  else
+    echo "Load Average OK: $allload"
+    exit 0
+  fi
+;;
+
+
+proc)  # number of processes
+
+  numProc=`sudo vzctl exec $2  top -b -n1|wc -l`
+  echo "Number of Processess: $numProc|'processes'=${numProc}"
+
+  [[ "$numProc" -gt 70 ]] && exit 2
+  [[ "$numProc" -gt 60 ]] && exit 1
+  exit 0
+
+;;
+
+
+days)  # days left on VPS contract
+  max_days=`sqlc "select master_live.duration_days from master_live left join vm on master_live.vm_id=vm.vm_ID where CTID=$2 LIMIT 1"` || or echo "die"
+  #echo "maxdays: $max_days"
+  start_date=`sqlc "select master_live.live_dateadded from master_live left join vm on master_live.vm_id=vm.vm_ID where CTID=$2 LIMIT 1"`
+  #echo "start_date:$start_date"
+  newdate=`date "+%Y-%m-%d %T" --date "$start_date ${max_days} days"`
+  #echo "newdate:$newdate"
+  now=`date "+%Y-%m-%d %T"`
+  #echo "now:$now"
+  remaining_days=`dateDiff $newdate $now`
+  echo "Remaining Days: $remaining_days"
+  numDays=$(echo $remaining_days)
+  [[ ! -n $numDays ]] && echo "UNKNOWN" && exit 3
+  [[ "$numDays" -lt 3 ]] && echo "FAIL: Days Remaining $remaining_days" && exit 2
+  [[ "$numDays" -lt 6 ]] && exit 1
+  exit 0
+
+;;
+
+
+mysql)  # check mysql
+  sudo vzctl exec $2 $PLUGINSDIR/check_mysql -H 1.2.3.4 -u amro -p password -d Amrox_prod
+
+;;
+
+
+status)  # checkcontainer is running and responding
+
+  sudo vzctl status $2 | grep -vq down
+  if  [[ "$?" -ne 0 ]]; then
+
+    echo "System is DOWN"
+    exit 2
+
+  else
+
+    echo "System is OK"
+
+  fi
+;;
+
+
+mem)  # basic memory check
+
+  cmd="free |grep -i mem"
+  output=`sudo vzctl exec $2 "$cmd"`
+  total=`echo $output|awk {'print $2'}`
+  used=`echo $output|awk {'print $3'}`
+  percentused=`echo "scale=2; ${used}/${total}*100"|bc|awk -F. {'print $1'}`
+  maxpercent=95
+  if [[ "$percentused" -gt  "$maxpercent" ]]; then
+
+  echo "vRAM usage ${percentused}% exceeds quota|'percentused'=$percentused"
+  exit 2
+  else
+  echo "vRAM Space usage OK: ${percentused}%|'percentused'=$percentused"
+  exit 0
+  fi
+;;
+
+
+disk)  # virtual disk usage
+
+  cmd="df -P / | tail -1"
+  output=`sudo vzctl exec $2 "$cmd"`
+  total=`echo $output|awk {'print $2'}`
+  used=`echo $output|awk {'print $3'}`
+  percentused=`echo "scale=2; ${used}/${total}*100"|bc|awk -F. {'print $1'}`
+  maxpercent=97  # need early warning, so reducing from 100
+  if [[ "$percentused" -gt  "$maxpercent" ]]; then
+
+    echo "Disk Space usage ${percentused}% exceeds quota: ${used}K/${total}K"
+    exit 2
+  else
+    echo "Disk Space usage OK: ${percentused}%: ${used}K/${total}K|'disk'=$percentused"
+    exit 0
+  fi
+
+
+;;
+
+
+ssh)  # ssh process running
+
+  cmd_redhat="/sbin/service sshd status"
+  #cmd_debian="/etc/init.d/ssh status"
+  cmd_debian="ps -ax | grep -q sshd"
+  cmd_slackware="ps ax | grep sshd$"
+
+  case $3 in  # determine method of checking on distro
+
+  *debian*)
+    cmd=$cmd_debian
+  ;;
+  *slack*)
+    cmd=$cmd_slackware
+  ;;
+  *redhat*|*suse*)
+    cmd=$cmd_redhat
+  ;;
+  *)
+    cmd=$cmd_debian
+
+  ;;
+  esac
+
+  sudo vzctl exec $2 "$cmd" 
+  if [[ "$?"  -ne 0 ]]; then
+    echo "SSH is NOT running"
+    exit 2
+  else
+    echo "SSH is UP"
+  fi
+
+;;
+
+
+*)  # invalid option
+
+  echo usage "$0 [cmd] [CTID]"
+  echo "params:"
+  cat <<EOF
+
+  newmail
+  customers
+  mailq
+  nfs
+  webmin
+  amroxlog
+  bandwidth
+  sendmail
+  load
+  proc
+  days
+  mysql
+  status
+  mem
+  disk
+  ssh
+  perms
+  sql_repl
+  EOF
+
+  exit 66
+;;
+esac

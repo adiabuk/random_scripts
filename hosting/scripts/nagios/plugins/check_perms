@@ -1,0 +1,36 @@
+#!/usr/bin/perl
+
+# Check if /var/amrox is writable by all
+# Author: Amro Diab
+# Date: 12/2010
+
+use strict;
+use warnings;
+use File::stat;
+
+sub diehard(){
+
+print shift() . "\n";
+exit shift();
+}
+
+
+my $fpath   = "/var/log/amrox";
+
+unless(-d $fpath){
+    &diehard("Critical: Dir Not Found: $fpath",2);
+}
+
+my $info    = stat($fpath);
+my $retMode = $info->mode;
+$retMode = $retMode & 0777;
+
+
+
+unless ($retMode & 002) {
+    &diehard("Warning: No Write permissions for $fpath",1);
+}
+
+print "OK - $fpath is writeable by ALL";
+
+exit 0;

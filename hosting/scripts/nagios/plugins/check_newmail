@@ -1,0 +1,19 @@
+#!/usr/bin/perl -w
+#
+# Author Amro Diab
+# Check number of unread emails for given user
+# Date: 2010
+
+$user = shift @ARGV or die "Please supply username as param";
+#Returns number of messages for user specified in stdin
+
+
+$result=`echo q|mail -u $user|head -2|tail -1`;
+if ($result =~ m/.*\s+(\d+)\s*unread/) {
+  print "$1";
+}
+else
+{
+  print "0";
+}
+

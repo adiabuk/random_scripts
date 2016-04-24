@@ -1,0 +1,26 @@
+#!/usr/bin/perl
+
+# Check if IP is blacklisted
+
+$num_args = $#ARGV + 1;
+if ($num_args != 1) {
+  die "\nPlease provide IP as argument";
+}
+$IP = $ARGV[0];
+open CMD, "wget -q http://www.anti-abuse.org/rblresults.php?host=$IP -O - |";
+
+while () {
+  if (!/listed in /) { next; }
+  if (!/NOT listed in /) { $error++; }
+}
+
+if (!$error) {
+  print "OK\n";
+  exit 0;
+}
+
+else {
+  print "CRITICAL: $error\n";
+  exit 2
+}
+

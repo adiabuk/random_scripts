@@ -1,0 +1,90 @@
+#!/usr/lib/cgi-bin/php
+#!/usr/bin/php
+<?php
+/*
+ * Ciphron - Advanced Security
+ *
+ * Tel.: (05 11) 59 02 54 - 70 Fax: (05 11) 59 02 54 - 74
+ * Web: http://www.ciphron.de/ Support: (05 11) 59 02 54 - 76
+ *
+ * Hetzner Traffic control
+ *
+ *
+ * @author: jk@ciphron.de
+ */
+require_once ( 'HTTP/Client.php' );
+
+$client = new HTTP_Client();
+
+if ( $_SERVER['argc'] != 7 )  
+die (
+'Use: ./check_hetzner USERNAME PASSWORD IP SUBNET/NETMASK WARN CRITICAL
+
+WARN und CRITIAL in MB
+
+Bsp: ./hetzner.php USER PW 192.168.0.1 192.168.2.0/255.255.255.0 2000 10000
+' );
+
+
+$user = $_SERVER['argv'][1];
+$pw = $_SERVER['argv'][2];
+$ip = $_SERVER['argv'][3];
+$sub = $_SERVER['argv'][4];
+$warn = (int)$_SERVER['argv'][5];
+$critical = (int)$_SERVER['argv'][6];
+
+
+$client->setDefaultHeader( array ( 'User-Agent' => 'Nagios Spider' ) );
+
+$client->get ( 'https://www.hetzner.de/robot/' );
+
+$client->post ( 'https://www.hetzner.de/robot/passwd.php', array ( 'login' => $user, 'passwd' => $pw ) );
+
+$client->get ( 'https://www.hetzner.de/robot/traffic_1.php?art=monat' );
+
+$buf = $client->currentResponse();
+if ( !preg_match ( '@<input type=hidden name=id value="(?P<id>[^"]*)">.*?<input type=hidden name=ip_anz value="(?P<ip_anz>\d*)">.*?<input type=hidden name=sub_anz value="(?P<sub_anz>\d*)">.*?<input type=hidden name=subip_anz value="(?P<subip_anz>\d*)">.*?<input type=hidden name=id2 value="(?P<id2>[^"]*)">@s', $buf['body'], $match ) ) {
+	echo $buf['body'];
+	echo "Regex 1 failed!";
+	exit ( 3 );
+}
+$postdata = array ( 'art' => 'monat', 'id' => $match['id'], 'id2' => $match['id2'], 'monat' => date ( 'n' ), 'jahr' => date ( 'Y' ), 'tag1' => 1, 'tag2' => 31, 'ip_anz' => $match['ip_anz'], 'sub_anz' => $match['sub_anz'], 'subip_anz' => $match['subip_anz'], 'ip0' => $ip, 'sub0' => $sub );
+
+$client->post ( 'https://www.hetzner.de/robot/traffic_2.php', $postdata );
+
+$buf = $client->currentResponse();
+if ( !preg_match_all ( '@<tr><td width=10>&nbsp;</td><td><span class="willkommen" style="font-size: 8pt">(?P<ip>\d+\.\d+\.\d+\.\d+)</span></td><td><span class="willkommen" style="font-size: 8pt">[^<]*</span></td><td align=right><span class="willkommen" style="font-size: 8pt">(?P<in>[\.\d,]+)</span></td><td align=right><span class="willkommen" style="font-size: 8pt">(?P<out>[\.\d,]+)</span></td><td align=right><span class="willkommen" style="font-size: 8pt">(?P<sum>[\.\d,]+)</span></td></tr>@', $buf['body'], $all_ips, PREG_SET_ORDER ) ) {
+	echo $buf['body'];
+	echo "Regex 2 failed!";
+	exit ( 3 );
+}
+if ( !preg_match ( '@<td><span class="willkommen" style="font-size: 8pt">Gesamt:</span></td><td></td><td align=right><span class="willkommen" style="font-size: 8pt">(?P<in>[\.\d,]+)</span></td><td align=right style="padding-left: 5px;"><span class="willkommen" style="font-size: 8pt">(?P<out>[\.\d,]+)</span></td><td align=right style="padding-left: 5px;"><span class="willkommen" style="font-size: 8pt">(?P<sum>[\.\d,]+)</span></td>@', $buf['body'], $total ) ) {
+	echo $buf['body'];
+	echo "Regex 3 failed!";
+	exit ( 3 );
+}
+
+function dataclean ( $str ) {
+	return (int) str_replace( ',', '', str_replace( '.', '', $str ) );
+}
+
+$str = ' - In = '.$total['in'].' GB, Out = '.$total['out'].' GB, Sum = '.$total['sum'].' GB | total_sum='.dataclean($total['sum']).', total_in='.dataclean($total['in']).', total_out='.dataclean($total['out']);
+
+foreach ( $all_ips as $row ) {
+	$thisIpStr = str_replace ( '.', '-', $row['ip'] );
+	$str .= ', '.$thisIpStr.'_sum='.dataclean($row['sum']);
+	$str .= ', '.$thisIpStr.'_in='.dataclean($row['in']);
+	$str .= ', '.$thisIpStr.'_out='.dataclean($row['out']);
+}
+
+if ( dataclean($total['sum']) > $critical ) {
+	echo "CRITCAL".$str;
+	exit ( 2 );
+} else if ( dataclean($total['sum']) > $warn ) {
+	echo "WARN".$str;
+	exit ( 1 );
+} else {
+	echo "OK".$str;
+	exit ( 0 );
+}
+?>
