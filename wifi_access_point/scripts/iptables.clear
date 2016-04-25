@@ -1,0 +1,10 @@
+#!/bin/sh
+
+IPTABLES=/sbin/iptables
+
+$IPTABLES -F
+$IPTABLES -t nat -F
+$IPTABLES -t mangle -F
+$IPTABLES -X
+
+
