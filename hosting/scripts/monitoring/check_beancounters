@@ -1,0 +1,84 @@
+#!/bin/bash
+
+# Create resource usage report and email
+# Add to daily crontab
+
+cat /proc/user_beancounters |grep -v privvmpages > /tmp/user_beancounters
+
+gawk '
+BEGIN
+  {
+    printf "%3s %-20s %3s %3s \n", "ID", "Parameter", "%bar", "%lim" > "/tmp/beancounters"
+  }
+
+  /dummy/||/Version/||/uid/ { next }
+  ! /:/ {
+          RESOURCE=$1
+          MAXHELD=$3
+          BARRIER=$4
+          LIMIT=$5
+        }
+  /:/  {  gsub(/:/, "", $1)
+          printf "------- %s ------- \n",$1
+          VZ=$1
+          RESOURCE=$2
+          MAXHELD=$4
+          BARRIER=$5
+          LIMIT=$6
+        }
+        {
+          #printf "R=%s M=%s B=%s L=%s ", RESOURCE, MAXHELD, BARRIER, LIMIT
+          if (BARRIER>0) {
+            PBARRIER=MAXHELD*100/BARRIER
+          } else {
+            PBARRIER=0
+          }
+          if (LIMIT>0) {
+            PLIMIT=MAXHELD*100/LIMIT
+          } else {
+            PLIMIT=0
+          }
+          printf "%-20s %3d %3d ", RESOURCE , PBARRIER, PLIMIT
+          if (PBARRIER>=90)  {
+            printf " Warning "
+            printf "%3d %-20s %3d %3d Perill\n", VZ, RESOURCE , PBARRIER, PLIMIT >> "/tmp/beancounters"
+          }
+          printf "\n"
+  }
+  ' /tmp/user_beancounters
+
+echo "---------------------------------------------------" >> /tmp/beancounters
+echo "" | gawk -vVZ='ID' -vRESOURCE='Use Disc%' '
+{
+  printf "%3s %-20s \n", VZ, RESOURCE  >> "/tmp/beancounters"
+}
+'
+
+# Quota Disc
+
+for i in $(/usr/sbin/vzlist | cut -d" " -f 8)
+do
+    /usr/sbin/vzctl exec $i df -h |  gawk -vVEID=$i '/^simfs/ { if ($5 > "99%") { printf "%s %s\n", VEID, $5 }  }' >>/tmp/beancounters
+
+done
+
+echo "---------------------------------------------------" >> /tmp/beancounters
+echo "" | gawk -vVZ='ID' -vRESOURCE='IUse Disc%' '
+{
+  printf "%3s %-20s \n", VZ, RESOURCE  >> "/tmp/beancounters"
+} '
+
+for i in $(/usr/sbin/vzlist | cut -d" " -f 8)
+do
+  /usr/sbin/vzctl exec $i df -i |  gawk -vVEID=$i '/^simfs/ { if ($5 > "96%")
+  {
+    printf "%s %s\n", VEID, $5
+  }
+}' >>/tmp/beancounters
+
+done
+
+if [[ "$(cat /tmp/beancounters | wc -l)" != "5"  ]] ; then
+  cat /tmp/beancounters   |  mail -s "Server:resource.sh Warning " amro.diab@amroxonline.com
+  exit 2
+fi
