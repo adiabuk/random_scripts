@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # auto commit new configs to svn
+# Author: Amro Diab
+# Date: 2010
 
 dir=$1
 name=$2
