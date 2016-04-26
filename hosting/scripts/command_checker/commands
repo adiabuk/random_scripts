@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# associate command with alias
+# used with check_command to check before running poitentially dangerous 
+# commands on production hosts
+# Author: Amro Diab
+# Date: 22/04/2011
+command='/var/amrox/scripts/check_command'
+
+function ls() { $command $FUNCNAME $@;}
+function reboot() { $command $FUNCNAME $@;}
+function vzctl() { $command $FUNCNAME $@;}
+function iptables() { $command $FUNCNAME $@;}
+function shutdown() { $command $FUNCNAME $@;}
+function kill() { $command $FUNCNAME $@;}
+function service() { $command $FUNCNAME $@;}
+function init() { $command $FUNCNAME $@;}
+
