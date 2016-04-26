@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# Display total memory allocated to instances
+# Display total harddisk space allocated to containers for a particular host
 # Author: Amro Diab
-# Date: 19/08/2010
 
 configfile="/var/amrox/etc/VPS-config"
 
@@ -15,10 +14,7 @@ else
 fi
 
 
-# Host ID as param
-
-
-for i in `sqlc "select memory_values from memory_used where host_id=$1"`; do
+for i in `sqlc "select harddrive_hard from harddrive_used where host_id=2"`; do
   total=$(($total+$i))
 done
 
