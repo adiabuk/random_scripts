@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<order id="97" customerid="17">
+  <product productid="170">
+    <Duration>7</Duration>
+    <Memory>128</Memory>
+    <Maxmemory>128</Maxmemory>
+    <CustomerID>17</CustomerID>
+    <SoftHD>1000000</SoftHD>
+    <HardHD>1000000</HardHD>
+    <Filename>ubuntu-9.10-x86_64</Filename>
+    <IPID>999</IPID>
+    <Gateway>10.0.4.254</Gateway>
+    <IPAddress>10.0.4.107</IPAddress>
+    <NameServer1>78.47.5.67</NameServer1>
+    <bandwidth>1073741824</bandwidth>
+    <bandwidthid>54</bandwidthid>
+    <Password>43vqYHrq?</Password>
+    <hostname>stg4107</hostname>
+    <CTID>206</CTID>
+    <VMID>107</VMID>
+  </product>
+  <product productid="171">
+    <Duration>7</Duration>
+    <Memory>128</Memory>
+    <Maxmemory>128</Maxmemory>
+    <CustomerID>17</CustomerID>
+    <SoftHD>1000000</SoftHD>
+    <HardHD>1000000</HardHD>
+    <Filename>ubuntu-9.04-x86_64</Filename>
+    <IPID>1000</IPID>
+    <Gateway>10.0.4.254</Gateway>
+    <IPAddress>10.0.4.108</IPAddress>
+    <NameServer1>78.47.5.67</NameServer1>
+    <bandwidth>1073741824</bandwidth>
+    <bandwidthid>54</bandwidthid>
+    <Password>kxLadZ67;</Password>
+    <hostname>stg4108</hostname>
+    <CTID>207</CTID>
+    <VMID>108</VMID>
+  </product>
+</order>

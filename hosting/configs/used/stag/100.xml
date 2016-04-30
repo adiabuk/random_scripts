@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<order id="100" customerid="16">
+  <product productid="175">
+    <Duration>30</Duration>
+    <Memory>1024</Memory>
+    <Maxmemory>1024</Maxmemory>
+    <CustomerID>16</CustomerID>
+    <SoftHD>100000000</SoftHD>
+    <HardHD>100000000</HardHD>
+    <Filename>centos-5-x86_64</Filename>
+    <IPID>1004</IPID>
+    <Gateway>10.0.4.254</Gateway>
+    <IPAddress>10.0.4.112</IPAddress>
+    <NameServer1>78.47.5.67</NameServer1>
+    <bandwidth>53687091200</bandwidth>
+    <bandwidthid>58</bandwidthid>
+    <Password>0e!fgJb7P</Password>
+    <hostname>stg4112</hostname>
+    <CTID>211</CTID>
+    <VMID>112</VMID>
+  </product>
+  <product productid="176">
+    <Duration>7</Duration>
+    <Memory>128</Memory>
+    <Maxmemory>128</Maxmemory>
+    <CustomerID>16</CustomerID>
+    <SoftHD>1000000</SoftHD>
+    <HardHD>1000000</HardHD>
+    <Filename>ubuntu-9.10-x86_64</Filename>
+    <IPID>1005</IPID>
+    <Gateway>10.0.4.254</Gateway>
+    <IPAddress>10.0.4.113</IPAddress>
+    <NameServer1>78.47.5.67</NameServer1>
+    <bandwidth>1073741824</bandwidth>
+    <bandwidthid>54</bandwidthid>
+    <Password>0Jn6(vXxl</Password>
+    <hostname>stg4113</hostname>
+    <CTID>212</CTID>
+    <VMID>113</VMID>
+  </product>
+</order>

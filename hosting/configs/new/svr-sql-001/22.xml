@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<order id="22" customerid="5">
+  <product productid="59">
+    <Duration>7</Duration>
+    <Memory>1024</Memory>
+    <Maxmemory>1024</Maxmemory>
+    <CustomerID>5</CustomerID>
+    <SoftHD>20000000</SoftHD>
+    <HardHD>20000000</HardHD>
+    <Filename>ubuntu-9.04-x86_64</Filename>
+    <IPID>878</IPID>
+    <Gateway>78.46.195.27</Gateway>
+    <IPAddress>78.46.195.26</IPAddress>
+    <NameServer1>213.133.100.100</NameServer1>
+    <bandwidth>1099511627776</bandwidth>
+    <bandwidthid>58</bandwidthid>
+    <Password>-zLTm7of2</Password>
+    <hostname>avstst01.amroxonline.com</hostname>
+    <CTID>101</CTID>
+    <VMID>2</VMID>
+  </product>
+</order>

@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<order id="5" customerid="2">
+  <product productid="24">
+    <Duration>30</Duration>
+    <Memory>512</Memory>
+    <Maxmemory>512</Maxmemory>
+    <CustomerID>2</CustomerID>
+    <SoftHD>10000000</SoftHD>
+    <HardHD>10000000</HardHD>
+    <Filename>debian-4.0-x86</Filename>
+    <IPID>356</IPID>
+    <Gateway>192.168.1.1</Gateway>
+    <IPAddress>192.168.1.1</IPAddress>
+    <NameServer1>192.168.3.254</NameServer1>
+    <bandwidth>107374182400</bandwidth>
+    <bandwidthid>57</bandwidthid>
+    <Password>:cdL83prN</Password>
+    <CTID>100</CTID>
+    <VMID>1</VMID>
+  </product>
+  <product productid="25">
+    <Duration>30</Duration>
+    <Memory>1024</Memory>
+    <Maxmemory>1024</Maxmemory>
+    <CustomerID>2</CustomerID>
+    <SoftHD>20000000</SoftHD>
+    <HardHD>20000000</HardHD>
+    <Filename>debian-5.0-x86_64</Filename>
+    <IPID>357</IPID>
+    <Gateway>192.168.1.1</Gateway>
+    <IPAddress>192.168.1.2</IPAddress>
+    <NameServer1>192.168.3.254</NameServer1>
+    <bandwidth>107374182400</bandwidth>
+    <bandwidthid>57</bandwidthid>
+    <Password>]ahqhU84W</Password>
+    <CTID>101</CTID>
+    <VMID>2</VMID>
+  </product>
+  <product productid="26">
+    <Duration>30</Duration>
+    <Memory>64</Memory>
+    <Maxmemory>64</Maxmemory>
+    <CustomerID>2</CustomerID>
+    <SoftHD>500000</SoftHD>
+    <HardHD>500000</HardHD>
+    <Filename>debian-4.0-x86</Filename>
+    <IPID>358</IPID>
+    <Gateway>192.168.1.1</Gateway>
+    <IPAddress>192.168.1.3</IPAddress>
+    <NameServer1>192.168.3.254</NameServer1>
+    <bandwidth>10737418240</bandwidth>
+    <bandwidthid>54</bandwidthid>
+    <Password>_Spf2hd9G</Password>
+    <CTID>102</CTID>
+    <VMID>3</VMID>
+  </product>
+  <product productid="26">
+    <Duration>30</Duration>
+    <Memory>64</Memory>
+    <Maxmemory>64</Maxmemory>
+    <CustomerID>2</CustomerID>
+    <SoftHD>500000</SoftHD>
+    <HardHD>500000</HardHD>
+    <Filename>debian-4.0-x86</Filename>
+    <IPID>359</IPID>
+    <Gateway>192.168.1.1</Gateway>
+    <IPAddress>192.168.1.4</IPAddress>
+    <NameServer1>192.168.3.254</NameServer1>
+    <bandwidth>10737418240</bandwidth>
+    <bandwidthid>54</bandwidthid>
+    <Password>voG2rd&lt;W4</Password>
+    <CTID>103</CTID>
+    <VMID>4</VMID>
+  </product>
+</order>

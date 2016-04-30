@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<order id="12" customerid="2">
+  <product productid="40">
+    <Duration>183</Duration>
+    <Memory>1024</Memory>
+    <Maxmemory>1024</Maxmemory>
+    <CustomerID>2</CustomerID>
+    <SoftHD>20000000</SoftHD>
+    <HardHD>20000000</HardHD>
+    <Filename>fedora-11-x86_64</Filename>
+    <IPID>868</IPID>
+    <Gateway>78.46.195.27</Gateway>
+    <IPAddress>78.46.195.26</IPAddress>
+    <NameServer1>213.133.100.100</NameServer1>
+    <bandwidth/>
+    <bandwidthid/>
+    <Password>HZ8ml8(dm</Password>
+    <hostname>VPS101</hostname>
+    <CTID>101</CTID>
+    <VMID>2</VMID>
+  </product>
+</order>

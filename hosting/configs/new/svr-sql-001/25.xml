@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<order id="25" customerid="2">
+  <product productid="62">
+    <Duration>365</Duration>
+    <Memory>768</Memory>
+    <Maxmemory>768</Maxmemory>
+    <CustomerID>2</CustomerID>
+    <SoftHD>500000</SoftHD>
+    <HardHD>500000</HardHD>
+    <Filename>x86</Filename>
+    <IPID>867</IPID>
+    <Gateway>78.46.195.27</Gateway>
+    <IPAddress>78.46.195.25</IPAddress>
+    <NameServer1>213.133.100.100</NameServer1>
+    <bandwidth>10737418240</bandwidth>
+    <bandwidthid>54</bandwidthid>
+    <Password>dI+ukjS82</Password>
+    <hostname>NULL</hostname>
+    <CTID>100</CTID>
+    <VMID>1</VMID>
+  </product>
+  <product productid="63">
+    <Duration>365</Duration>
+    <Memory>64</Memory>
+    <Maxmemory>64</Maxmemory>
+    <CustomerID>2</CustomerID>
+    <SoftHD>500000</SoftHD>
+    <HardHD>500000</HardHD>
+    <Filename>x86_64</Filename>
+    <IPID>878</IPID>
+    <Gateway>78.46.195.27</Gateway>
+    <IPAddress>78.46.195.26</IPAddress>
+    <NameServer1>213.133.100.100</NameServer1>
+    <bandwidth>107374182400</bandwidth>
+    <bandwidthid>57</bandwidthid>
+    <Password>dDek~0Kt1</Password>
+    <hostname>avstst01.amroxonline.com</hostname>
+    <CTID>101</CTID>
+    <VMID>2</VMID>
+  </product>
+</order>

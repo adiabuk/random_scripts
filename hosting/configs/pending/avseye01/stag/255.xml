@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<order id="255" customerid="33">
+  <product productid="353">
+    <Duration/>
+    <Memory/>
+    <Maxmemory/>
+    <CustomerID>33</CustomerID>
+    <SoftHD/>
+    <HardHD/>
+    <Filename/>
+    <Email>adiab@hotmail.co.uk</Email>
+    <UserID>adiab1</UserID>
+    <Quota>500</Quota>
+    <IPID/>
+    <Gateway/>
+    <IPAddress/>
+    <NameServer1/>
+    <bandwidth/>
+    <support/>
+    <bandwidthid/>
+    <Password>5d_akJP5u</Password>
+    <hostname/>
+    <CTID/>
+    <VMID/>
+  </product>
+</order>

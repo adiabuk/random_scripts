@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<order id="11" customerid="3">
+  <product productid="38">
+    <Duration>30</Duration>
+    <Memory>64</Memory>
+    <Maxmemory>64</Maxmemory>
+    <CustomerID>3</CustomerID>
+    <SoftHD>500000</SoftHD>
+    <HardHD>500000</HardHD>
+    <Filename>debian-4.0-x86</Filename>
+    <IPID/>
+    <Gateway/>
+    <IPAddress/>
+    <NameServer1/>
+    <bandwidth/>
+    <bandwidthid/>
+    <Password>{bnuj13HA</Password>
+    <CTID>113</CTID>
+    <VMID>14</VMID>
+  </product>
+  <product productid="39">
+    <Duration>30</Duration>
+    <Memory>2048</Memory>
+    <Maxmemory>2048</Maxmemory>
+    <CustomerID>3</CustomerID>
+    <SoftHD>100000000</SoftHD>
+    <HardHD>100000000</HardHD>
+    <Filename>debian-5.0-x86_64</Filename>
+    <IPID/>
+    <Gateway/>
+    <IPAddress/>
+    <NameServer1/>
+    <bandwidth/>
+    <bandwidthid/>
+    <Password>DF1xmca8,</Password>
+    <CTID>114</CTID>
+    <VMID>15</VMID>
+  </product>
+</order>

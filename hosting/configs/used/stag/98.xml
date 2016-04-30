@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<order id="98" customerid="16">
+  <product productid="172">
+    <Duration>7</Duration>
+    <Memory>128</Memory>
+    <Maxmemory>128</Maxmemory>
+    <CustomerID>16</CustomerID>
+    <SoftHD>1000000</SoftHD>
+    <HardHD>1000000</HardHD>
+    <Filename>debian-4.0-x86_64</Filename>
+    <IPID>1001</IPID>
+    <Gateway>10.0.4.254</Gateway>
+    <IPAddress>10.0.4.109</IPAddress>
+    <NameServer1>78.47.5.67</NameServer1>
+    <bandwidth>1073741824</bandwidth>
+    <bandwidthid>54</bandwidthid>
+    <Password>e9{rnCXm7</Password>
+    <hostname>stg4109</hostname>
+    <CTID>208</CTID>
+    <VMID>109</VMID>
+  </product>
+  <product productid="173">
+    <Duration>7</Duration>
+    <Memory>128</Memory>
+    <Maxmemory>128</Maxmemory>
+    <CustomerID>16</CustomerID>
+    <SoftHD>1000000</SoftHD>
+    <HardHD>1000000</HardHD>
+    <Filename>ubuntu-9.10-x86_64</Filename>
+    <IPID>1002</IPID>
+    <Gateway>10.0.4.254</Gateway>
+    <IPAddress>10.0.4.110</IPAddress>
+    <NameServer1>78.47.5.67</NameServer1>
+    <bandwidth>1073741824</bandwidth>
+    <bandwidthid>54</bandwidthid>
+    <Password>/Js9jk8kW</Password>
+    <hostname>stg4110</hostname>
+    <CTID>209</CTID>
+    <VMID>110</VMID>
+  </product>
+</order>

@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<order id="33" customerid="2">
+  <product productid="71">
+    <Duration>7</Duration>
+    <Memory>64</Memory>
+    <Maxmemory>64</Maxmemory>
+    <CustomerID>2</CustomerID>
+    <SoftHD>500000</SoftHD>
+    <HardHD>500000</HardHD>
+    <Filename>x86_64</Filename>
+    <IPID>879</IPID>
+    <Gateway>78.46.195.27</Gateway>
+    <IPAddress>192.168.0.4</IPAddress>
+    <NameServer1>213.133.100.100</NameServer1>
+    <bandwidth>53687091200</bandwidth>
+    <bandwidthid>56</bandwidthid>
+    <Password>&gt;f2Pf1Heh</Password>
+    <hostname>NULL</hostname>
+    <CTID>102</CTID>
+    <VMID>3</VMID>
+  </product>
+  <product productid="72">
+    <Duration>365</Duration>
+    <Memory>256</Memory>
+    <Maxmemory>256</Maxmemory>
+    <CustomerID>2</CustomerID>
+    <SoftHD>500000</SoftHD>
+    <HardHD>500000</HardHD>
+    <Filename>x86_64</Filename>
+    <IPID>880</IPID>
+    <Gateway>78.46.195.27</Gateway>
+    <IPAddress>192.168.0.5</IPAddress>
+    <NameServer1>213.133.100.100</NameServer1>
+    <bandwidth>107374182400</bandwidth>
+    <bandwidthid>57</bandwidthid>
+    <Password>yS47Mbws!</Password>
+    <hostname>NULL</hostname>
+    <CTID>103</CTID>
+    <VMID>4</VMID>
+  </product>
+</order>

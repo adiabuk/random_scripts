@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<order id="14" customerid="2">
+  <product productid="42">
+    <Duration>183</Duration>
+    <Memory>768</Memory>
+    <Maxmemory>768</Maxmemory>
+    <CustomerID>2</CustomerID>
+    <SoftHD>10000000</SoftHD>
+    <HardHD>10000000</HardHD>
+    <Filename>debian-5.0-x86_64</Filename>
+    <IPID>878</IPID>
+    <Gateway>78.46.195.27</Gateway>
+    <IPAddress>78.46.195.26</IPAddress>
+    <NameServer1>213.133.100.100</NameServer1>
+    <bandwidth>1099511627776</bandwidth>
+    <bandwidthid>58</bandwidthid>
+    <Password>f3Aq.X4zd</Password>
+    <hostname>VPS125</hostname>
+    <CTID>125</CTID>
+    <VMID>26</VMID>
+  </product>
+</order>

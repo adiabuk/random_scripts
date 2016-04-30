@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<order id="56" customerid="59">
+  <product productid="92">
+    <UserID>diaba4</UserID>
+    <Email>adiab@hotmail.co.uk</Email>
+    <Password>L0ddckgedj4$</Password>
+    <Quota>500</Quota>
+    <Filename>blank</Filename>
+    <IPAddress>192.168.0.2</IPAddress>
+    <Hostname>www.adiab.com</Hostname>
+    <CustomerID>21</CustomerID>
+  </product>
+</order>
+

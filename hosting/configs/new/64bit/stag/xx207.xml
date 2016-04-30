@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<product productid="">
+  <Duration>32</Duration>
+  <Memory>512</Memory>
+  <Maxmemory>512</Maxmemory>
+  <CustomerID>35</CustomerID>
+  <SoftHD>209715200</SoftHD>
+  <HardHD>209715200</HardHD>
+  <Filename>ubuntu-8.10-x86</Filename>
+  <IPID>1099</IPID>
+  <Gateway>10.0.4.254</Gateway>
+  <IPAddress>10.0.4.207</IPAddress>
+  <NameServer1>78.47.5.67</NameServer1>
+  <bandwidth>107374182400</bandwidth>
+  <support/>
+  <bandwidthid>59</bandwidthid>
+  <Password>2DK447MfjR</Password>
+  <hostname>stg4207</hostname>
+  <CTID>306</CTID>
+  <VMID>207</VMID>
+</product>

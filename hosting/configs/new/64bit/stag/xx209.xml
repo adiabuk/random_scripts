@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<product productid="">
+  <Duration>24</Duration>
+  <Memory>256</Memory>
+  <Maxmemory>256</Maxmemory>
+  <CustomerID>32</CustomerID>
+  <SoftHD/>
+  <HardHD/>
+  <Filename>ubuntu-9.10-x86</Filename>
+  <IPID>1101</IPID>
+  <Gateway>10.0.4.254</Gateway>
+  <IPAddress>10.0.4.209</IPAddress>
+  <NameServer1>78.47.5.67</NameServer1>
+  <bandwidth>21474836480</bandwidth>
+  <support/>
+  <bandwidthid>57</bandwidthid>
+  <Password>v56QuzrjT5</Password>
+  <hostname>stg4209</hostname>
+  <CTID>308</CTID>
+  <VMID>209</VMID>
+</product>

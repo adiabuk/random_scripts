@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<order id="255" customerid="33">
+  <product productid="353">
+    <Duration>365</Duration>
+    <Memory/>
+    <Maxmemory/>
+    <CustomerID>33</CustomerID>
+    <SoftHD/>
+    <HardHD/>
+    <Filename>x86_64</Filename>
+    <IPID>1106</IPID>
+    <Gateway>10.0.4.254</Gateway>
+    <IPAddress>10.0.4.214</IPAddress>
+    <NameServer1>78.47.5.67</NameServer1>
+    <bandwidth/>
+    <support/>
+    <bandwidthid/>
+    <Password>TQsr:k62l</Password>
+    <hostname>stg4214</hostname>
+    <CTID>313</CTID>
+    <VMID>214</VMID>
+  </product>
+</order>

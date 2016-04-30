@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<order id="10" customerid="2">
+  <product productid="37">
+    <Duration>30</Duration>
+    <Memory/>
+    <Maxmemory/>
+    <CustomerID>2</CustomerID>
+    <SoftHD/>
+    <HardHD/>
+    <Filename/>
+    <IPID/>
+    <Gateway/>
+    <IPAddress/>
+    <NameServer1/>
+    <bandwidth>10737418240</bandwidth>
+    <bandwidthid>54</bandwidthid>
+    <Password>Oz:P12exy</Password>
+    <CTID>112</CTID>
+    <VMID>13</VMID>
+  </product>
+</order>

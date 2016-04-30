@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<order id="" customerid="32">
+  <product productid="">
+    <Duration>32</Duration>
+    <Memory>512</Memory>
+    <Maxmemory>512</Maxmemory>
+    <CustomerID>32</CustomerID>
+    <SoftHD>5010000</SoftHD>
+    <HardHD>5010000</HardHD>
+    <Filename>ubuntu-9.10-x86</Filename>
+    <IPID>1103</IPID>
+    <Gateway>10.0.4.254</Gateway>
+    <IPAddress>10.0.4.211</IPAddress>
+    <NameServer1>78.47.5.67</NameServer1>
+    <bandwidth>53687091200</bandwidth>
+    <support/>
+    <bandwidthid>58</bandwidthid>
+    <Password>75gvlW@yM</Password>
+    <hostname>stg4211</hostname>
+    <CTID>310</CTID>
+    <VMID>211</VMID>
+  </product>
+</order>

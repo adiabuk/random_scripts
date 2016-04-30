@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<order id="102" customerid="18">
+  <product productid="179">
+    <Duration>7</Duration>
+    <Memory>128</Memory>
+    <Maxmemory>128</Maxmemory>
+    <CustomerID>18</CustomerID>
+    <SoftHD>1000000</SoftHD>
+    <HardHD>1000000</HardHD>
+    <Filename>centos-4-x86_64</Filename>
+    <IPID>1007</IPID>
+    <Gateway>10.0.4.254</Gateway>
+    <IPAddress>10.0.4.115</IPAddress>
+    <NameServer1>78.47.5.67</NameServer1>
+    <bandwidth>1073741824</bandwidth>
+    <bandwidthid>54</bandwidthid>
+    <Password>ycW64Hqw%</Password>
+    <hostname>stg4115</hostname>
+    <CTID>214</CTID>
+    <VMID>115</VMID>
+  </product>
+</order>
