@@ -1,0 +1,85 @@
+#!/usr/bin/perl
+
+#
+# check_http_new - Nagios Plugin
+# New http plugin which uses lib curl to overcome bug with proxy
+#
+#
+# Copyright (C) 2011 Amro Diab
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#
+# Report bugs to: amro.diab@amroxonline.com
+#
+# 06.10.2011 v.1.0 - First Draft
+
+
+#use strict;
+use warnings;
+
+use WWW::Curl::Easy;
+use Getopt::Long;
+use LWP::Simple;
+
+my $hostname;
+my $port;
+my $proxy;
+my $response_body;
+
+GetOptions(
+    "H=s" => \$hostname, "hostname=s" => \$hostname,
+    "p=s" => \$port, "port=s" => \$port,
+    "P=s" => \$proxy, "proxy=s" => \$proxy,
+    "S=s" => \$search, "search=s" => \$search,
+  );
+
+sub fail {
+
+  print "$_[0]\n";
+  exit $_[1];
+
+}
+
+
+sub write_callback {
+    my ($chunk,$variable)=@_;
+    # store each chunk/line separately
+    # This should be faster than using $$varable .= $chunk;
+    push @{$variable}, $chunk;
+    return length($chunk);
+}
+
+
+
+my $curl = WWW::Curl::Easy->new;
+$curl->setopt(CURLOPT_HEADER,1);
+$curl->setopt(CURLOPT_URL,$hostname);
+$curl->setopt(CURLOPT_PROXY,"http://$proxy:$port");
+$curl->setopt(CURLOPT_FILE,\@body);
+$curl->setopt(CURLOPT_HTTPHEADER,\@head);
+
+$curl->setopt(CURLOPT_HEADERFUNCTION, \&write_callback);
+$curl->setopt(CURLOPT_WRITEFUNCTION, \&write_callback);
+
+
+my $info=$curl->getinfo(CURLINFO_HTTP_CODE);
+
+if ($curl->perform() != 0) { fail("CRITICAL: Curl perform failed",2); }
+
+
+$body=join( "",@body);
+$body =~ m/$search/ or fail("CRITICAL: No such Pattern",2);
+fail("OK: Success reaching site",0);

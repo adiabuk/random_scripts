@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+
+# Check mysql queries per second
+# Connect to db using args passed in, and parse output to get QPS
+#
+# Author: Amro Diab
+# Date: 19/03/10
+
+use Getopt::Long;
+
+
+GetOptions
+        ("V"   => \$opt_V, "version"    => \$opt_V,
+         "u=s"   => \$opt_u, "user"    => \$opt_u,
+         "p=s"   => \$opt_p, "password"    => \$opt_p,
+         "h"   => \$opt_h, "help"       => \$opt_h,
+         "v" => \$verbose, "verbose"  => \$verbose,
+         "w=s" => \$opt_w, "warning=s"  => \$opt_w,
+         "c=s" => \$opt_c, "critical=s" => \$opt_c,
+         "H=s" => \$opt_H, "hostname=s" => \$opt_H);
+
+
+$var=`/usr/lib64/nagios/plugins/check_mysql -u $opt_u -p $opt_p`;
+
+$var =~ s/.*avg\://;
+$var =~ s/^\s+//;
+
+if ($var > $opt_c) {
+  $output="Critical";
+  $exit=2;
+}
+elsif ($var > $opt_w) {
+  $output="Warning";
+  $exit=1;
+}
+else {
+  $output="OK";
+  $exit=0;
+}
+
+print "$output QPS=$var";
+exit $exit;
