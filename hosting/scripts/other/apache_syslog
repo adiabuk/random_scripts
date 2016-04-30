@@ -1,0 +1,10 @@
+#!/usr/bin/perl
+use Sys::Syslog qw( :DEFAULT setlogsock );
+
+setlogsock('unix');
+openlog('apache', 'pid,cons', 'local2');
+
+while ($log = <STDIN>) {
+  syslog('info', $log) or die "unable to syslog";
+}
+closelog
