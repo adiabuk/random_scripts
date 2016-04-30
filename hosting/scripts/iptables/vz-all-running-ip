@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+# Create list of container ips on current host
+
+vzlist -H -o ip |grep -v ^\-
+echo "78.46.195.24"
+echo "88.198.39.95"

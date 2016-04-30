@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+# List of container IDs currently running
+
+/usr/sbin/vzlist -H -oveid | sed 's/ //g;'
+

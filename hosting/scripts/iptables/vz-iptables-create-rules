@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# Create firewall rules for host & containers
+# for collection of bandwidth usage: upstream & downstream
+# Author: Amro Diab
+# Date: 03/04/2009
+
+if [[ $1 == 'vz' ]]; then
+  filename=vz_ips;
+elif [[ $1 == 'node' ]]; then
+  filename == 'node';
+else
+  echo "Usage: $0 node|vz"
+fi
+
+for i in `cat ./${filename}`;  do
+  iptables -D FORWARD -s $i; iptables -D FORWARD -d $i >/dev/null 2>&1
+  iptables -A FORWARD -s $i; iptables -A FORWARD -d $i > /dev/null 2>&1
+done

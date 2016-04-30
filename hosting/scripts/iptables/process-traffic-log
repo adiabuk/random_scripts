@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Process traffic log
+
+trafficlog="/var/log/vz-traffic.log"
+for i in `./vz-all-running-ip` ;
+ do
+  echo -n `date "+%Y-%m-%d,%H:%M:%S"`",">> $trafficlog
+  echo -n "$i," >> $trafficlog
+  echo `iptables -nvx -L FORWARD | grep " $i " | tr -s [:blank:] | \
+    cut -d' ' -f3| awk '{sum+=$1} END {print sum;}'` >> $trafficlog
+ done
+

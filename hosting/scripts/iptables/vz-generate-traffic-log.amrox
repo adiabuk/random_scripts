@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+# Generate traffic log and display online report
+# TODO: complete php webpage and authentication
+#
+# Author: Amro Diab
+# Date: 04/04/09
+
+trafficlog="/var/log/vz-traffic.log"
+for i in `./vz-all-running-ip` ;
+ do
+  echo -n `date "+%Y-%m-%d %H:%M:%S"` >> $trafficlog
+  echo -n " $i " >> $trafficlog
+  echo `iptables -nvx -L FORWARD | grep " $i " | tr -s [:blank:] \
+    |cut -d' ' -f3| awk '{sum+=$1} END {print sum;}'` >> $trafficlog
+ done
+ # reset the counter
+ iptables -Z
+ # update the iptables rules if there is a any change in containers
+ ./vz-iptables-create-rules
+
+
+ # copy the trafficlog file to a webserver where users can see their traffic
+
+ # please mind to use
+ # ssh-keygen -t rsa
+ # to generate ssh keys
+ # and append the new public key from your hardware node (~/.ssh/id_rsa.pub)
+ # to ~/.ssh/authorized_keys2 on the HOST-TO-SHOW-THE-TRAFFIC-TO-THE-USERS
+ # in order for the below scp command to not ask for root password
+ mv $trafficlog /var/amrox/configs/iptables/$HOSTNAME-traffic
+
+ # clear the copied trafficlog
+ #cp /dev/null $trafficlog
+ # start a php script to store the traffic in a MySQL Database on the
+ # HOST-TO-SHOW-THE-TRAFFIC-TO-THE-USER # please mind to use .htaccess to
+ # secure this
+ wget -q http://HOST-TO-SHOW-THE-TRAFFIC-TO-THE-USERS/traffic-read.php?HN=$HOSTNAME -O /dev/null
+
