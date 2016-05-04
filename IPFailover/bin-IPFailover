@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+# Failover IP to that of a remote machine if that IP is not pingable.  Config
+# should contain IP of remote host.  App runs as a sysV service and perically
+# checks remote IP, and take over if unavailable for specified duration
+# Requirements: 2 virtual IPs on a single interface, and a remote host with the
+# same configeration
+# Tested on RHEL3 & RHEL4
+#
+# Author: Amro Diab
+# Date: 19/12/09
+
+if [ "x$1" != "x--" ]; then
+  $0 -- 1> /dev/null 2> /dev/null &
+  exit 0
+fi
+
+#if test -e /etc/sysconfig/IPFailover-config ; then
+if test -e ./IPFailover-config ; then
+    #. /etc/sysconfig/IPFailover-config
+    . ./IPFailover-config
+else
+   echo "Unable to parse config"
+   exit 1
+fi
+
+logit(){
+  logger -t "IPFailover" $1
+}
+
+logit "Starting Monitor of $IPADDR on $VIPNAME"
+
+while true; do
+  for i in $(seq 1 $ATTEMPTS); do
+     # echo "start of loop"
+    /sbin/ifconfig $VADAPTER |grep -q $IPADDR
+    [ "$?" == "0" ] && ping -c1 -w1 $IPADDR &> /dev/null
+    [ "$?" == "0" ] && echo "left loop" && break
+
+    #failed
+    logit "Unable to ping remote adapter: attepmt $i/$ATTEMPTS"
+    sleep $DELAY_BAD
+    if [ "$i" == "$ATTEMPTS" ]; then
+      /sbin/ifconfig $VADAPTER $IPADDR up && \
+        logit "Starting local adapter: [OK]" || \
+        logit "Starting local adapter [FAILED]"
+    fi
+
+  done
+
+  sleep $DELAY_GOOD
+
+done

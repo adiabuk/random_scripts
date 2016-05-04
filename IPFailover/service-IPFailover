@@ -1,0 +1,87 @@
+#
+# chkconfig: 2345 85 15
+# description: Monitors and fails over Virtual Interfaces across multiple servers
+# processname: IPFailover
+# config: /etc/sysconfig/IPFailover-config
+# source: /etc/sysconfig/IPFailover-config
+#
+# Author: Amro Diab
+# Date: 19/12/09
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+if test -e /etc/sysconfig/IPFailover-config ; then
+    . /etc/sysconfig/IPFailover-config
+fi
+
+
+
+start() {
+
+  echo "Starting IPFailover: "
+  if test -e /etc/sysconfig/IPFailover-config; then
+    daemon /usr/local/bin/IPFailover
+    [ $? -eq 0 ] && touch /var/lock/subsys/IPFailover
+  else
+    echo "Unable to find config, exiting"
+    exit1
+  fi
+
+}
+
+stop() {
+
+  echo "Shutting down IPFailover: "
+  killproc IPFailover
+  [ $? -eq 0 ] && rm -f /var/lock/subsys/IPFailover
+
+}
+
+restart() {
+
+  stop
+  start
+
+}
+
+rhstatus() {
+
+  status IPFailover
+
+}
+
+case "$1" in
+
+  start)
+    [ ! -f /var/lock/subsys/IPFailover ] && start || echo "Already Running"
+  ;;
+  stop)
+
+    stop
+  ;;
+
+  status)
+    rhstatus
+  ;;
+
+  restart)
+    restart
+  ;;
+
+  reload)
+    reload
+  ;;
+
+  condrestart)
+    [ -f /var/lock/subsys/IPFailover ] && restart || :
+  ;;
+
+  *)
+    echo $"Usage: $0 {start|stop|status|restart|condrestart}"
+    exit 2
+  ;;
+
+esac
+
+exit $?
