@@ -1,0 +1,119 @@
+#!/bin/bash
+
+# Original Author: Unknown
+# 28.09.2011 v.1.1 Amro Diab - print UNKNOWN error if unable to exectute
+#                              external command and exit 3
+# 03.10.2011 v.1.2 Amro Diab - Seperated greps and awks from original
+#                              command execution to return error code of
+#                              base command
+# 03.10.2011 v.1.3 Amro Diab - Passed name of variable to error function to
+#                              help debug issue
+
+function error_exit
+{
+    command=$1
+    echo "UNKNOWN: unable to execute \"$command\" command, check script and dependency perms"
+    exit $STATE_UNKNOWN
+}
+
+
+
+PROGNAME=`basename $0`
+PROGPATH=`echo $0 | /bin/sed -e 's,[\\/][^\\/][^\\/]*$,,'`
+REVISION=`echo '$Revision: 1.1 $' | sed -e 's/[^0-9.]//g'`
+
+
+. $PROGPATH/utils.sh
+#. /usr/lib64/nagios/plugins/utils.sh
+print_usage() {
+        echo "Usage: $PROGNAME --help"
+        echo "Usage: $PROGNAME --version"
+}
+
+print_help() {
+        print_revision $PROGNAME $REVISION
+        echo ""
+        print_usage
+        echo ""
+        echo "Zeus Pools status check."
+        echo ""
+        support
+}
+
+# No command line arguments are required for this script. We accept only 2,
+# --help and --version.  If more than 1 is passed in then we have an error
+# condition.
+
+if [ $# -gt 1 ]; then
+        print_usage
+        exit $STATE_UNKNOWN
+fi
+exitstatus=$STATE_WARNING #default
+while test -n "$1"; do
+        case "$1" in
+                --help)
+                       print_help
+                        exit $STATE_OK
+                        ;;
+                -h)
+                        print_help
+                        exit $STATE_OK
+                        ;;
+                --version)
+                        print_revision $PROGNAME $REVISION
+                        exit $STATE_OK
+                        ;;
+                -V)
+                        print_revision $PROGNAME $REVISION
+                        exit $STATE_OK
+                        ;;
+
+                *)
+                        echo "Unknown argument: $1"
+                        print_usage
+                        exit $STATE_UNKNOWN
+                        ;;
+        esac
+        shift
+done
+#
+# No arguments.  Let's kick this pig.
+#
+SNMPWALK="/usr/bin/snmpwalk"
+XPOOLS=`$SNMPWALK -mALL -v1 -c public2 localhost:1161  poolName` || error_exit pools
+POOLS=`echo XPOOLS | awk -F ':' '{print $NF}'
+
+
+XSTATUS=`$SNMPWALK -mALL -v1 -Oq -c public2 localhost:1161 perPoolNodeState` || error_exit status
+STATUS=`echo $XSTATUS | egrep -v alive`
+
+XDISPLAY=`$SNMPWALK -mALL -v1 -Oq -c public2 localhost:1161 perPoolNodeState` || error_exit  display
+XDISPLAY=`echo $XDISPLAY|grep -v alive | awk -F '.' '{print $2}' | awk '{ ORS=","; print; }'`
+
+
+XSERVER=`$SNMPWALK -mALL -v1 -Oq -c public2 localhost:1161 perPoolNodeState` || error_exit server
+SERVER=`echo $XSERVER | grep -v alive | awk -F 'ipv4' '{print $2}' | awk '{ ORS=","; print; }'`
+
+#total_users=$(smbstatus -b | grep "^[0-9]" | wc -l)
+total_users=$STATUS
+total_files=$DISPLAY
+if [ "$STATUS" == "" ]
+then
+total_users="OK All Pools are Up"
+echo "$total_users"
+else
+total_users="Critical $DISPLAY Pool has $SERVER Out"
+echo "$total_users"
+fi
+
+
+
+#
+# now for the dismount.
+#
+#echo "Total Users:$total_users Total Files:$total_files"
+
+#
+# let Nagios know that everything is ok.
+#
+exit $STATE_OK
