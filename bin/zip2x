@@ -45,11 +45,9 @@ fi
 #Remove the temporary directory
 rm -rf $tmpdir
 
-#Print what we did
-echo "Done"
-
 # remove source file as we have gotten this far without any errors
 # backup file will remain temporily in /tmp
 rm $1
+echo Done
 
 
