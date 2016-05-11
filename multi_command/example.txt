@@ -1,0 +1,7 @@
+ls /tmp
+echo b
+sleep 2;echo 3
+echo 4
+echo f
+echo h
+
