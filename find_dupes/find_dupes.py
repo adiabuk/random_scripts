@@ -26,6 +26,7 @@ from optparse import OptionParser
 from filestructure import FileStructure
 from debug import print_debug
 from processthreads import FileThread
+from progress import ProgressBar
 
 CURRENT_DIR = os.getcwd()
 __builtin__.exitFlag = 0
@@ -112,22 +113,26 @@ def main():
 
     initial_qsize = float(__builtin__.workQueue.qsize())
 
-    def print_progress():
-        """ poor man's progress overview """
-
+    def print_progress(progress):
+        """ print and update progress bar """
         remaining = float(initial_qsize - __builtin__.workQueue.qsize())
-        perc = int((remaining/initial_qsize)*100)
+        progress.current = remaining
+        progress()
+        """
         print("progress: " +  str(remaining).strip() + '/' +
               str(initial_qsize).strip() + ' :' +
               str(perc).strip() + '%')
-
+        """
+    progress=ProgressBar(workQueue.qsize(), fmt=ProgressBar.FULL)
     print "Getting file metadata\n"
     # Wait for queue to empty
     while not workQueue.empty():
-        print_progress()
-        time.sleep(1)
+        print_progress(progress)
+        time.sleep(0.1)
 
-    print_progress()
+    print_progress(progress)
+    progress.done()
+    print
 
     # Notify threads it's time to exit
     __builtin__.exitFlag = 1
