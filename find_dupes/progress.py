@@ -39,4 +39,3 @@ class ProgressBar(object):
         self.current = self.total
         self()
         print('', file=self.output)
-"""
