@@ -58,19 +58,20 @@ class FileThread(threading.Thread):
 
         path = filename
         if os.path.isfile(path):
-            try:
-                mhash = self.md5(path)
-            except (IOError, OSError):
-                print_debug('Error accessing {}'.format(path))
-                return
+           # try:
+           #     mhash = self.md5(path)
+           # except (IOError, OSError):
+           #     print_debug('Error accessing {}'.format(path))
+           #     return
             size = os.path.getsize(path)
             inode = os.stat(path).st_ino
-            my_dict.put(str(path), str(mhash), str(size), str(inode))
+            my_dict.put(str(path), str(size), str(inode))
             print_debug('updating for {}'.format(path))
         else:
             print_debug('{} is not a file'.format(path))
 
     def md5(self, filename):
+        return filename    #temp
         """ get the md5 check sum of a given file """
         hash_md5 = hashlib.md5()
         with open(filename, "rb") as file_handle:

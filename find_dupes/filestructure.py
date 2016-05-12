@@ -1,4 +1,4 @@
-
+from collections import defaultdict
 """
 
 Filestrcutre class and suporting functions for storing, sorting, extracting,
@@ -31,7 +31,7 @@ class FileStructure(dict):
 
     def __init__(self):
 
-        self.my_dict = dict()
+        self.my_dict = defaultdict(dict)
         super(FileStructure, self).__init__()
 
     def __getitem__(self, item):
@@ -56,8 +56,8 @@ class FileStructure(dict):
         """ set single item in the structure """
 
         print_debug("setting item")
-        #self.my_dict=1
-    def put(self, path, mhash, size, inode):
+
+    def put(self, path, size, inode):
         """ Insert item into structure, given the path, md5 hash, size, and
         inode.  Checks will be made to ensure that if the md5 hash and/or inode
         provided already exists, we will not overwrite, but add this as a value
@@ -65,7 +65,9 @@ class FileStructure(dict):
         """
         print_debug("putting size:{}, path:{},inode:{}".format(size, path,
                                                                inode))
-        #print inode
+        main_dict=defaultdict(dict)
+        self.my_dict[size].update({path:inode})
+        """ 
         if not mhash in self.my_dict:
             print_debug('path not present')
             self.my_dict.update({mhash:dict()})
@@ -80,7 +82,7 @@ class FileStructure(dict):
             print_debug('path2 already present')
         self.my_dict[mhash][inode]['filenames'].append(path)
         self.my_dict[mhash][inode]['size'] = size
-
+        """
     def get(self):
         """ get entire object """
         return self.my_dict

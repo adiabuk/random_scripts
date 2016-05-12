@@ -17,6 +17,7 @@ Date: 10/05/2016
 import Queue
 import json
 import os
+import sys
 import threading
 import time
 import __builtin__
@@ -72,7 +73,6 @@ def main():
     ignore_dot_files = options.ignore_dot_files
     ignore_dot_dirs = options.ignore_dot_dirs
 
-    #threadList = ["Thread-1", "Thread-2", "Thread-3", "T4", "]
     max_count = threads
     threadList = list("Thread {}".format(x) for x in range(max_count))
     global queueLock
@@ -82,6 +82,7 @@ def main():
     threadID = 1
 
 
+    print "Generating Threads"
     # Create new threads
     for tName in threadList:
         thread = FileThread(threadID, tName, __builtin__.workQueue)
@@ -92,22 +93,23 @@ def main():
     top = CURRENT_DIR
 
     # Acquire file list
+    print "Getting file list"
     queueLock.acquire()
     for (dirname, dirs, files) in os.walk(CURRENT_DIR):
-        dirs = [d for d in dirs if not d[0] == '.'] if ignore_dot_dirs else dirs
+        dirs[:] = [d for d in dirs if not d[0] == '.'] if ignore_dot_dirs else dirs
         files = [f for f in files if not f[0] == '.'] if ignore_dot_files else files
 
         for filename in files:
-            os.chdir(dirname)
+            #os.chdir(dirname)
             print_debug(dirname + '/' + filename)
             fullpath = dirname + '/' + filename
             __builtin__.workQueue.put(fullpath)
 
             # add all your operations for the current job in the directory
             # Now go back to the top of the chain
-            os.chdir(top)
+            #os.chdir(top)
     queueLock.release()
-    print_debug("got here")
+
     initial_qsize = float(__builtin__.workQueue.qsize())
 
     def print_progress():
@@ -119,7 +121,7 @@ def main():
               str(initial_qsize).strip() + ' :' +
               str(perc).strip() + '%')
 
-
+    print "Getting file metadata\n"
     # Wait for queue to empty
     while not workQueue.empty():
         print_progress()
@@ -134,17 +136,31 @@ def main():
     # Wait for all threads to complete
     for t in threads:
         t.join()
-    #time.sleep(5)
+
     print_debug("Exiting Main Thread")
 
     my_dict = dict(FileStructure().get())
 
-    #print_debug('all final: {}'.format(my_dict))
+    print "removing non repeated files from consideration"
+    del my_dict['0']
+    keys_to_delete = ['0']
+    for key, value in my_dict.iteritems():
+        if len(value.keys()) == 1:
+            keys_to_delete.append(key)
+    for key in keys_to_delete:
+        try:
+            del my_dict[key]
+        except KeyError:
+            pass
+    sys.exit() #############################
+
+
     if pretty:
         print json.dumps(my_dict, indent=4, sort_keys=True)
     else:
-        print json.dumps(my_dict)
-
+        print
+        #print json.dumps(my_dict)
+        """
     for md5 in my_dict.keys():
         total_system = 0
         if (len(my_dict[md5]) == 1 and
@@ -177,6 +193,6 @@ def main():
 
         total_system += total_size
     print "\n\n\nTotal potential saving entire subtree: {}".format(human_bytes(total_system))
-
+    """
 if __name__ == '__main__':
     main()
