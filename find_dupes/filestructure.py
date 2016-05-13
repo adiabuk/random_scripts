@@ -5,7 +5,10 @@ Filestrcutre class and suporting functions for storing, sorting, extracting,
 and manipulating file file attributes and other metadata
 
 """
+
+import Queue
 import json
+import threading
 
 from debug import print_debug
 
@@ -21,6 +24,13 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
+class workQueue(Queue.Queue, object):
+
+    __metaclass__ = Singleton
+
+    def __init__(self, *args, **kwargs):
+        self.queueLock = threading.Lock()
+        super(workQueue, self).__init__(*args, **kwargs)
 
 class FileStructure(dict):
     """
