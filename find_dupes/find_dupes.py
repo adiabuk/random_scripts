@@ -23,7 +23,7 @@ import time
 import __builtin__
 
 from optparse import OptionParser
-from filestructure import FileStructure
+from filestructure import FileStructure, workQueue
 from debug import print_debug
 from processthreads import FileThread
 from progress import ProgressBar
@@ -33,6 +33,8 @@ __builtin__.exitFlag = 0
 
 
 
+def print_status(title):
+    sys.stderr.write("* {}\n".format(title))
 
 
 def parse_options():
@@ -86,17 +88,18 @@ def main():
 
     max_count = threads
     threadList = list("Thread {}".format(x) for x in range(max_count))
-    global queueLock
-    __builtin__.queueLock = threading.Lock()
-    __builtin__.workQueue = Queue.Queue(100000000)  # 100 million
+
+    work_queue = workQueue(100000000)  # 100 million
+
+    queue_lock = work_queue.queueLock
     threads = []
     threadID = 1
 
 
-    sys.stderr.write("Generating Threads\n")
+    print_status("Generating Threads")
     # Create new threads
     for tName in threadList:
-        thread = FileThread(threadID, tName, __builtin__.workQueue)
+        thread = FileThread(threadID, tName, work_queue)
         thread.start()
         threads.append(thread)
         threadID += 1
@@ -104,8 +107,8 @@ def main():
     top = CURRENT_DIR
 
     # Acquire file list
-    sys.stderr.write("Getting file list\n")
-    queueLock.acquire()
+    print_status("Getting file list")
+    queue_lock.acquire()
     for (dirname, dirs, files) in os.walk(CURRENT_DIR):
         dirs[:] = [d for d in dirs if not d[0] == '.'] if ignore_dot_dirs else dirs
         files = [f for f in files if not f[0] == '.'] if ignore_dot_files else files
@@ -114,29 +117,27 @@ def main():
             #os.chdir(dirname)
             print_debug(dirname + '/' + filename)
             fullpath = dirname + '/' + filename
-            __builtin__.workQueue.put(fullpath)
+            work_queue.put(fullpath)
 
             # add all your operations for the current job in the directory
             # Now go back to the top of the chain
             #os.chdir(top)
-    queueLock.release()
+    queue_lock.release()
 
-    initial_qsize = float(__builtin__.workQueue.qsize())
-
+    initial_qsize = float(work_queue.qsize())
+    
+    
     def print_progress(progress):
         """ print and update progress bar """
-        remaining = float(initial_qsize - __builtin__.workQueue.qsize())
+        remaining = float(initial_qsize - work_queue.qsize())
         progress.current = remaining
         progress()
-        """
-        print("progress: " +  str(remaining).strip() + '/' +
-              str(initial_qsize).strip() + ' :' +
-              str(perc).strip() + '%')
-        """
-    progress=ProgressBar(workQueue.qsize(), fmt=ProgressBar.FULL)
-    sys.stderr.write("Getting file metadata\n")
+        
+    progress=ProgressBar(work_queue.qsize(), fmt=ProgressBar.FULL)
+    print_status("Getting file metadata")
+
     # Wait for queue to empty
-    while not workQueue.empty():
+    while not work_queue.empty():
         print_progress(progress)
         time.sleep(0.1)
 
@@ -156,7 +157,7 @@ def main():
 
     my_dict = dict(FileStructure().get())
 
-    sys.stderr.write("removing non repeated files from consideration\n")
+    print_status("Removing non repeated files from consideration")
 
     keys_to_delete = []
     keys_to_delete.append('0')

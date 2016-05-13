@@ -5,18 +5,20 @@ adding to a Queue
 
 """
 
-import time
-import threading
-import os
+import filestructure
 import hashlib
+import os
+import threading
+import time
+
 from debug import print_debug
-from filestructure import FileStructure
 
 
 class FileThread(threading.Thread):
     """
     Main thread for handeling file metadata extraction methods
     """
+
     def __init__(self, threadID, name, file_queue):
         """ Initialize the queue """
 
@@ -24,6 +26,7 @@ class FileThread(threading.Thread):
         self.threadID = threadID
         self.name = name
         self.file_queue = file_queue
+
 
     def run(self):
         """ Start the queue """
@@ -35,16 +38,18 @@ class FileThread(threading.Thread):
         """ retrieve a file from the queue, while locking, and sent for
         processing
         """
+        work_queue = filestructure.workQueue()
+        queue_lock = work_queue.queueLock
 
         while not exitFlag:
-            queueLock.acquire()
-            if not workQueue.empty():
+            queue_lock.acquire()
+            if not work_queue.empty():
                 data = file_queue.get()
-                queueLock.release()
+                queue_lock.release()
                 print_debug("%s processing %s" % (threadName, data))
                 self.scan_files(data)
             else:
-                queueLock.release()
+                queue_lock.release()
             print_debug("end of process data")
             time.sleep(1)
 
@@ -53,7 +58,7 @@ class FileThread(threading.Thread):
         Extract size, inode, md5 sum from given file and add to structure
         """
 
-        my_dict = FileStructure()
+        my_dict = filestructure.FileStructure()
 
         path = filename
         if os.path.isfile(path):
