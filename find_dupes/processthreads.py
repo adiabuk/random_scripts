@@ -17,7 +17,6 @@ class FileThread(threading.Thread):
     """
     Main thread for handeling file metadata extraction methods
     """
-
     def __init__(self, threadID, name, file_queue):
         """ Initialize the queue """
 

@@ -50,6 +50,13 @@ def parse_options():
                       default=False, help="do not process dot files")
     parser.add_option("-r", "--ignore_dot_dirs", action="store_true",
                       default=False, help="do not process dot dirs")
+    parser.add_option("-i", "--ignore_dirs", type="str", default="",
+                      help="list of comma separated directory names to ignnore")
+    parser.add_option("-x", "--ignore_files", type="str",
+                      help="list of comma sepatated filenames to ignore")
+    parser.add_option("-s", "--minimum_file_size", type="int", default=None,
+                      help="minimum file size to check (bytes)")
+
     (options, _) = parser.parse_args()
     return options
 
@@ -69,10 +76,13 @@ def main():
     options = parse_options()
     __builtin__.debug = options.debug
     pretty = options.pretty_print
-    global threads
+
     threads = options.threads
     ignore_dot_files = options.ignore_dot_files
     ignore_dot_dirs = options.ignore_dot_dirs
+    ignore_files = options.ignore_files
+    ignore_dirs = options.ignore_dirs
+    minimum_file_size = options.minimum_file_size
 
     max_count = threads
     threadList = list("Thread {}".format(x) for x in range(max_count))
@@ -83,7 +93,7 @@ def main():
     threadID = 1
 
 
-    print "Generating Threads"
+    sys.stderr.write("Generating Threads\n")
     # Create new threads
     for tName in threadList:
         thread = FileThread(threadID, tName, __builtin__.workQueue)
@@ -94,7 +104,7 @@ def main():
     top = CURRENT_DIR
 
     # Acquire file list
-    print "Getting file list"
+    sys.stderr.write("Getting file list\n")
     queueLock.acquire()
     for (dirname, dirs, files) in os.walk(CURRENT_DIR):
         dirs[:] = [d for d in dirs if not d[0] == '.'] if ignore_dot_dirs else dirs
@@ -124,7 +134,7 @@ def main():
               str(perc).strip() + '%')
         """
     progress=ProgressBar(workQueue.qsize(), fmt=ProgressBar.FULL)
-    print "Getting file metadata\n"
+    sys.stderr.write("Getting file metadata\n")
     # Wait for queue to empty
     while not workQueue.empty():
         print_progress(progress)
@@ -146,9 +156,10 @@ def main():
 
     my_dict = dict(FileStructure().get())
 
-    print "removing non repeated files from consideration"
-    del my_dict['0']
-    keys_to_delete = ['0']
+    sys.stderr.write("removing non repeated files from consideration\n")
+
+    keys_to_delete = []
+    keys_to_delete.append('0')
     for key, value in my_dict.iteritems():
         if len(value.keys()) == 1:
             keys_to_delete.append(key)
@@ -157,7 +168,6 @@ def main():
             del my_dict[key]
         except KeyError:
             pass
-    sys.exit() #############################
 
 
     if pretty:
