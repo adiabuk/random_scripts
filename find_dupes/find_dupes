@@ -2,8 +2,11 @@
 
 # Run find_dupes with default reccommended options
 
-
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [[ -L ${BASH_SOURCE[0]} ]]; then
+  DIR=`readlink ${BASH_SOURCE[0]} | xargs dirname`
+else
+  DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+fi
 
 $DIR/find_dupes.py --threads=10000 \
                    --ignore_dot_files \

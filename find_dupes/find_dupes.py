@@ -75,6 +75,12 @@ def human_bytes(num, suffix='B'):
 def main():
     """ main function if not called as a module """
 
+    def print_progress(progress):
+        """ print and update progress bar """
+        remaining = float(initial_qsize - work_queue.qsize())
+        progress.current = remaining
+        progress()
+
     options = parse_options()
 
     __builtin__.debug = options.debug
@@ -101,13 +107,17 @@ def main():
     thread_id = 1
 
     print_status("Generating Threads")
+    thread_progress = ProgressBar(len(thread_list), fmt=ProgressBar.FULL)
 
     # Create new threads
-    for thread_name in thread_list:
+    for iteration, thread_name in enumerate(thread_list):
         thread = FileThread(thread_id, thread_name, work_queue)
         thread.start()
         threads.append(thread)
         thread_id += 1
+        thread_progress.current = iteration
+        thread_progress()
+    thread_progress.done()
 
     # Acquire file list
     print_status("Getting file list")
@@ -130,13 +140,6 @@ def main():
     queue_lock.release()
 
     initial_qsize = float(work_queue.qsize())
-
-
-    def print_progress(progress):
-        """ print and update progress bar """
-        remaining = float(initial_qsize - work_queue.qsize())
-        progress.current = remaining
-        progress()
 
     progress = ProgressBar(work_queue.qsize(), fmt=ProgressBar.FULL)
     print_status("Getting file metadata")
@@ -180,7 +183,7 @@ def main():
         print json.dumps(my_dict, indent=4, sort_keys=True)
     else:
         print
-        #print json.dumps(my_dict)
+        print json.dumps(my_dict)
         """
     for md5 in my_dict.keys():
         total_system = 0
