@@ -41,7 +41,7 @@ class FileThread(threading.Thread):
         """ retrieve a file from the queue, while locking, and sent for
         processing
         """
-        work_queue = filestructure.workQueue()
+        work_queue = filestructure.WorkQueue()
         queue_lock = work_queue.queueLock
 
         while not exitFlag:
