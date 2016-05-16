@@ -1,4 +1,9 @@
+"""
+Progress bar module
+"""
+
 from __future__ import print_function
+
 import sys
 import re
 
@@ -16,7 +21,7 @@ class ProgressBar(object):
         self.symbol = symbol
         self.output = output
         self.fmt = re.sub(r'(?P<name>%\(.+?\))d',
-            r'\g<name>%dd' % len(str(total)), fmt)
+                          r'\g<name>%dd' % len(str(total)), fmt)
 
         self.current = 0
 
@@ -36,6 +41,7 @@ class ProgressBar(object):
         print('\r' + self.fmt % args, file=self.output, end='')
 
     def done(self):
+
         self.current = self.total
         self()
         print('', file=self.output)

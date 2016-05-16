@@ -1,4 +1,3 @@
-from collections import defaultdict
 """
 
 Filestrcutre class and suporting functions for storing, sorting, extracting,
@@ -9,6 +8,8 @@ and manipulating file file attributes and other metadata
 import Queue
 import json
 import threading
+
+from collections import defaultdict
 
 from debug import print_debug
 
@@ -24,13 +25,17 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
-class workQueue(Queue.Queue, object):
+class WorkQueue(Queue.Queue, object):
+    """
+    Queue object as a singleton, used to hold files which will be checked
+    for possible duplicates
+    """
 
     __metaclass__ = Singleton
 
     def __init__(self, *args, **kwargs):
         self.queueLock = threading.Lock()
-        super(workQueue, self).__init__(*args, **kwargs)
+        super(WorkQueue, self).__init__(*args, **kwargs)
 
 class FileStructure(dict):
     """
@@ -75,9 +80,8 @@ class FileStructure(dict):
         """
         print_debug("putting size:{}, path:{},inode:{}".format(size, path,
                                                                inode))
-        main_dict=defaultdict(dict)
         self.my_dict[size].update({path:inode})
-        """ 
+        """
         if not mhash in self.my_dict:
             print_debug('path not present')
             self.my_dict.update({mhash:dict()})
