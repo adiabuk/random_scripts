@@ -54,7 +54,7 @@ def parse_options():
                       default=False, help="do not process dot dirs")
     parser.add_option("-i", "--ignore_dirs", type="str", default="",
                       help="list of comma separated directory names to ignnore")
-    parser.add_option("-x", "--ignore_files", type="str",
+    parser.add_option("-x", "--ignore_files", type="str", default="",
                       help="list of comma sepatated filenames to ignore")
     parser.add_option("-s", "--minimum_file_size", type="int", default=None,
                       help="minimum file size to check (bytes)")
