@@ -5,13 +5,16 @@ adding to a Queue
 
 """
 
-import filestructure
+
 import hashlib
 import os
 import threading
 import time
 
+import filestructure
 from debug import print_debug
+
+
 
 
 class FileThread(threading.Thread):
@@ -19,11 +22,11 @@ class FileThread(threading.Thread):
     Main thread for handeling file metadata extraction methods
     """
 
-    def __init__(self, threadID, name, file_queue):
+    def __init__(self, thread_id, name, file_queue):
         """ Initialize the queue """
 
         threading.Thread.__init__(self)
-        self.threadID = threadID
+        self.thread_id = thread_id
         self.name = name
         self.file_queue = file_queue
 
@@ -34,7 +37,7 @@ class FileThread(threading.Thread):
         self.process_data(self.name, self.file_queue)
         print_debug("Exiting " + self.name)
 
-    def process_data(self, threadName, file_queue):
+    def process_data(self, thread_name, file_queue):
         """ retrieve a file from the queue, while locking, and sent for
         processing
         """
@@ -46,7 +49,7 @@ class FileThread(threading.Thread):
             if not work_queue.empty():
                 data = file_queue.get()
                 queue_lock.release()
-                print_debug("%s processing %s" % (threadName, data))
+                print_debug("%s processing %s" % (thread_name, data))
                 self.scan_files(data)
             else:
                 queue_lock.release()
@@ -75,12 +78,14 @@ class FileThread(threading.Thread):
             print_debug('{} is not a file'.format(path))
 
     def md5(self, filename):
-        return filename    #temp
-        """ get the md5 check sum of a given file """
+        """
+        Get md5 check sum of a givin file by breaking it up into chunks,
+        getting the checksum of each chunk and putting it all together to
+        return the result
+        """
+
         hash_md5 = hashlib.md5()
         with open(filename, "rb") as file_handle:
             for chunk in iter(lambda: file_handle.read(16384), b""):
                 hash_md5.update(chunk)
         return hash_md5.hexdigest()
-
-

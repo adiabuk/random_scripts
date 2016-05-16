@@ -8,6 +8,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 $DIR/find_dupes.py --threads=10000 \
                    --ignore_dot_files \
                    --ignore_dot_dirs \
-                   --ignore_dirs=tmp \
+                   --ignore_dirs=tmp,build.initrd \
                    --ignore_files=LICENSE \
-                   --minimum_file_size=10000
+                   --minimum_file_size=10000 $@

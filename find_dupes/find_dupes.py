@@ -14,16 +14,14 @@ Date: 10/05/2016
 
 """
 
-import Queue
 import json
 import os
 import sys
-import threading
 import time
 import __builtin__
 
 from optparse import OptionParser
-from filestructure import FileStructure, workQueue
+from filestructure import FileStructure, WorkQueue
 from debug import print_debug
 from processthreads import FileThread
 from progress import ProgressBar
@@ -34,6 +32,8 @@ __builtin__.exitFlag = 0
 
 
 def print_status(title):
+    """Print current stage title"""
+
     sys.stderr.write("* {}\n".format(title))
 
 
@@ -76,64 +76,69 @@ def main():
     """ main function if not called as a module """
 
     options = parse_options()
+
     __builtin__.debug = options.debug
     pretty = options.pretty_print
-
-    threads = options.threads
-    ignore_dot_files = options.ignore_dot_files
-    ignore_dot_dirs = options.ignore_dot_dirs
-    ignore_files = options.ignore_files
-    ignore_dirs = options.ignore_dirs
+    max_count = options.threads
     minimum_file_size = options.minimum_file_size
 
-    max_count = threads
-    threadList = list("Thread {}".format(x) for x in range(max_count))
+    ignore_dot_files = options.ignore_dot_files
+    ignore_dot_dirs = options.ignore_dot_dirs
 
-    work_queue = workQueue(100000000)  # 100 million
+    ignore_files = [x.strip() for x in options.ignore_files.split(',')]
+    ignore_dirs = [x.strip() for x in options.ignore_dirs.split(',')]
 
+    print ignore_files
+    print ignore_dirs
+    print
+
+    thread_list = list("Thread {}".format(x) for x in range(max_count))
+
+    work_queue = WorkQueue()
     queue_lock = work_queue.queueLock
-    threads = []
-    threadID = 1
 
+    threads = []
+    thread_id = 1
 
     print_status("Generating Threads")
+
     # Create new threads
-    for tName in threadList:
-        thread = FileThread(threadID, tName, work_queue)
+    for thread_name in thread_list:
+        thread = FileThread(thread_id, thread_name, work_queue)
         thread.start()
         threads.append(thread)
-        threadID += 1
-
-    top = CURRENT_DIR
+        thread_id += 1
 
     # Acquire file list
     print_status("Getting file list")
     queue_lock.acquire()
     for (dirname, dirs, files) in os.walk(CURRENT_DIR):
+
+        # strip out ignored dirs
         dirs[:] = [d for d in dirs if not d[0] == '.'] if ignore_dot_dirs else dirs
+        dirs[:] = [x for x in dirs if x not in ignore_dirs]
+
+        # strip out ignored files
         files = [f for f in files if not f[0] == '.'] if ignore_dot_files else files
+        files = [x for x in files if x not in ignore_files]
 
         for filename in files:
-            #os.chdir(dirname)
-            print_debug(dirname + '/' + filename)
             fullpath = dirname + '/' + filename
+            print_debug(fullpath)
             work_queue.put(fullpath)
 
-            # add all your operations for the current job in the directory
-            # Now go back to the top of the chain
-            #os.chdir(top)
     queue_lock.release()
 
     initial_qsize = float(work_queue.qsize())
-    
-    
+
+
     def print_progress(progress):
         """ print and update progress bar """
         remaining = float(initial_qsize - work_queue.qsize())
         progress.current = remaining
         progress()
-        
-    progress=ProgressBar(work_queue.qsize(), fmt=ProgressBar.FULL)
+
+    progress = ProgressBar(work_queue.qsize(), fmt=ProgressBar.FULL)
     print_status("Getting file metadata")
 
     # Wait for queue to empty
@@ -150,8 +155,8 @@ def main():
     print_debug("I am here")
 
     # Wait for all threads to complete
-    for t in threads:
-        t.join()
+    for thread in threads:
+        thread.join()
 
     print_debug("Exiting Main Thread")
 
