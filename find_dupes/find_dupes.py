@@ -58,7 +58,8 @@ def parse_options():
                       help="list of comma sepatated filenames to ignore")
     parser.add_option("-s", "--minimum_file_size", type="int", default=None,
                       help="minimum file size to check (bytes)")
-
+    parser.add_option("-o", "--only_file_extension", type="str", default="",
+                      help="single file extension to compare")
     (options, _) = parser.parse_args()
     return options
 
@@ -87,16 +88,13 @@ def main():
     pretty = options.pretty_print
     max_count = options.threads
     minimum_file_size = options.minimum_file_size
+    only_file_extension = options.only_file_extension
 
     ignore_dot_files = options.ignore_dot_files
     ignore_dot_dirs = options.ignore_dot_dirs
 
     ignore_files = [x.strip() for x in options.ignore_files.split(',')]
     ignore_dirs = [x.strip() for x in options.ignore_dirs.split(',')]
-
-    print ignore_files
-    print ignore_dirs
-    print
 
     thread_list = list("Thread {}".format(x) for x in range(max_count))
 
@@ -131,6 +129,7 @@ def main():
         # strip out ignored files
         files = [f for f in files if not f[0] == '.'] if ignore_dot_files else files
         files = [x for x in files if x not in ignore_files]
+        files = [x for x in files if x.endswith(only_file_extension)]
 
         for filename in files:
             fullpath = dirname + '/' + filename
@@ -163,21 +162,29 @@ def main():
 
     print_debug("Exiting Main Thread")
 
+    print_status("Removing non-duplicate files from list")
     my_dict = dict(FileStructure().get())
-
-    print_status("Removing non repeated files from consideration")
 
     keys_to_delete = []
     keys_to_delete.append('0')
+
     for key, value in my_dict.iteritems():
         if len(value.keys()) == 1:
             keys_to_delete.append(key)
-    for key in keys_to_delete:
+        if key < minimum_file_size:
+            keys_to_delete.append(key)
+
+    key_progress = ProgressBar(len(keys_to_delete), fmt=ProgressBar.FULL)
+    for iteration, key in enumerate(keys_to_delete):
+        key_progress.current = iteration 
+        key_progress()
         try:
             del my_dict[key]
         except KeyError:
             pass
+    key_progress.done()
 
+    sys.exit(1)
 
     if pretty:
         print json.dumps(my_dict, indent=4, sort_keys=True)
