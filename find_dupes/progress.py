@@ -26,7 +26,11 @@ class ProgressBar(object):
         self.current = 0
 
     def __call__(self):
-        percent = self.current / float(self.total)
+        try:
+            percent = self.current / float(self.total)
+        except ZeroDivisionError:
+            percent = 0
+
         size = int(self.width * percent)
         remaining = self.total - self.current
         bar = '[' + self.symbol * size + ' ' * (self.width - size) + ']'

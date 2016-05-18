@@ -14,16 +14,18 @@ Date: 10/05/2016
 
 """
 
+import __builtin__
 import json
 import os
 import sys
 import time
-import __builtin__
 
 from optparse import OptionParser
-from filestructure import FileStructure, WorkQueue
+from pprint import pprint
+
 from debug import print_debug
-from processthreads import FileThread
+from filestructure import FileStructure, Md5Structure, WorkQueue
+from processthreads import FileThread, Md5Thread
 from progress import ProgressBar
 
 CURRENT_DIR = os.getcwd()
@@ -34,7 +36,7 @@ __builtin__.exitFlag = 0
 def print_status(title):
     """Print current stage title"""
 
-    sys.stderr.write("* {}\n".format(title))
+    sys.stderr.write("\n* {}\n".format(title))
 
 
 def parse_options():
@@ -138,10 +140,9 @@ def main():
 
     queue_lock.release()
 
-    initial_qsize = float(work_queue.qsize())
-
-    progress = ProgressBar(work_queue.qsize(), fmt=ProgressBar.FULL)
     print_status("Getting file metadata")
+    initial_qsize = float(work_queue.qsize())
+    progress = ProgressBar(work_queue.qsize(), fmt=ProgressBar.FULL)
 
     # Wait for queue to empty
     while not work_queue.empty():
@@ -150,7 +151,6 @@ def main():
 
     print_progress(progress)
     progress.done()
-    print
 
     # Notify threads it's time to exit
     __builtin__.exitFlag = 1
@@ -160,70 +160,86 @@ def main():
     for thread in threads:
         thread.join()
 
-    print_debug("Exiting Main Thread")
-
     print_status("Removing non-duplicate files from list")
     my_dict = dict(FileStructure().get())
+    num_files = sum(len(v) for v in my_dict.itervalues())
+    dupe_progress = ProgressBar(num_files, fmt=ProgressBar.FULL)
 
     keys_to_delete = []
     keys_to_delete.append('0')
+    i = 0
 
     for key, value in my_dict.iteritems():
-        if len(value.keys()) == 1:
-            keys_to_delete.append(key)
-        if key < minimum_file_size:
-            keys_to_delete.append(key)
+        i += len(value.keys())
+        if len(value.keys()) != 1 and key != '0' and key > minimum_file_size:
+            work_queue.put({key: value})
+            dupe_progress.current = i
+            dupe_progress()
+    dupe_progress.done()
 
-    key_progress = ProgressBar(len(keys_to_delete), fmt=ProgressBar.FULL)
-    for iteration, key in enumerate(keys_to_delete):
-        key_progress.current = iteration 
-        key_progress()
-        try:
-            del my_dict[key]
-        except KeyError:
-            pass
-    key_progress.done()
+    print_status("Collecting md5 checksums")
 
-    sys.exit(1)
+    initial = float(work_queue.qsize())
+
+    md5_progress = ProgressBar(initial, fmt=ProgressBar.FULL)
+
+    __builtin__.exitFlag = 0
+    for iteration, thread_name in enumerate(thread_list):
+        thread = Md5Thread(thread_id, thread_name, work_queue)
+        thread.start()
+        threads.append(thread)
+
+        thread_id += 1
+        md5_progress.current = iteration
+        md5_progress()
+    __builtin__.exitFlag = 1
+
+    while not work_queue.empty():
+        remaining = initial - work_queue.qsize()
+        md5_progress.current = remaining
+        md5_progress()
+        work_queue.get()
+
+    md5_progress()
+    md5_progress.done()
+
+    for thread in threads:
+        thread.join()
+
+    print_status("calculating disk usage savings")
+    my_new_hash = dict(Md5Structure().get())
+
+    total_system = 0
+    for md5 in my_new_hash.keys():
+        if len(my_new_hash[md5]['entries']) > 1:
+
+            filenames = []  # to collect file names from the various inodes
+            count = len(my_new_hash[md5]['entries'])
+            size = int(my_new_hash[md5]['size'])
+            total_size = (int(size) * count) - int(size)
+            for key, value in my_new_hash[md5]['entries'].items():
+                filenames.append((key, value))
+            sys.stdout.write("md5:{}\n".format(md5))
+            sys.stdout.write("inode:{}\n".format(value))
+            sys.stdout.write("entries:")
+            pprint(filenames)
+            print
+            print "single size: ", size
+            print "number of files: ", count
+            print "saving for cluster ", total_size
+            print "\n"
+            total_system += total_size
+            print "-"*20
+        else:
+            del my_new_hash[md5]
 
     if pretty:
-        print json.dumps(my_dict, indent=4, sort_keys=True)
+        print json.dumps(my_new_hash, indent=4, sort_keys=True)
     else:
+        #print json.dumps(my_dict)
         print
-        print json.dumps(my_dict)
-        """
-    for md5 in my_dict.keys():
-        total_system = 0
-        if (len(my_dict[md5]) == 1 and
-                len(my_dict[md5][my_dict[md5].keys()[0]]['filenames']) == 1):
-            # only have one type inode  - regarless of number of files, we
-            # won't be making any space changes here - discard!
-            print "passing"
-            break
 
-        total_size = 0
-        filenames = []  # to collect file names from the various inodes
-
-        for inode in my_dict[md5].keys():
-            single_size = int(my_dict[md5][inode]['size'])
-            total_size += single_size
-            filenames.append(my_dict[md5][inode]['filenames'])
-            print_debug("md5: {}, inode: {} entries: {}, size: {}"
-                        .format(md5, inode,
-                                len(my_dict[md5][inode]['filenames']),
-                                single_size))
-
-        saving_size = total_size - single_size
-        print("total size for inode:{}, single_size:{}, saving_size:{}"
-              .format(human_bytes(total_size), human_bytes(single_size),
-                      human_bytes(saving_size)))
-        print "filenames in cluster:{}".format(filenames)
-        print "number of seperate inodes: {}".format(len(my_dict[md5][inode]))
-        print "total number of files: {}".format(len(filenames))
-        print "-"*50, "end of current md5"
-
-        total_system += total_size
     print "\n\n\nTotal potential saving entire subtree: {}".format(human_bytes(total_system))
-    """
+
 if __name__ == '__main__':
     main()
