@@ -31,6 +31,42 @@ from progress import ProgressBar
 CURRENT_DIR = os.getcwd()
 __builtin__.exitFlag = 0
 
+def print_report(final_dict, pretty):
+    """
+    Print final report of found repeated files in filestructure
+    """
+
+    total_system = 0
+    for md5 in final_dict.keys():
+        if len(final_dict[md5]['entries']) > 1:
+
+            filenames = []  # to collect file names from the various inodes
+            count = len(final_dict[md5]['entries'])
+            size = int(final_dict[md5]['size'])
+            total_size = (int(size) * count) - int(size)
+            for key, value in final_dict[md5]['entries'].items():
+                filenames.append((key, value))
+            sys.stdout.write("md5:{}\n".format(md5))
+            sys.stdout.write("inode:{}\n".format(value))
+            sys.stdout.write("entries:")
+            pprint(filenames)
+            print
+            print "single size: ", size
+            print "number of files: ", count
+            print "saving for cluster ", total_size
+            print "\n"
+            total_system += total_size
+            print "-"*20
+        else:
+            del final_dict[md5]
+    if pretty:
+        print json.dumps(final_dict, indent=4, sort_keys=True)
+    else:
+        #print json.dumps(final_dict)
+        print
+
+    print "\n\n\nTotal potential saving entire subtree: {}".format(human_bytes(total_system))
+
 
 
 def print_status(title):
@@ -75,14 +111,26 @@ def human_bytes(num, suffix='B'):
         num /= 1024.0
     return "%.1f%s%s" % (num, 'Yi', suffix)
 
+def create_threads(max_count, work_queue, thread_class):
+    """
+    Create new threads
+    """
+    # Create new threads
+    thread_id = 1
+    threads = []
+    thread_list = list("Thread {}".format(x) for x in range(max_count))
+    thread_progress = ProgressBar(max_count, fmt=ProgressBar.FULL)
+    for iteration, thread_name in enumerate(thread_list):
+        thread = thread_class(thread_id, thread_name, work_queue)
+        thread.start()
+        threads.append(thread)
+        thread_id += 1
+        thread_progress.print_progress(iteration)
+    thread_progress.print_progress(max_count)
+    return threads
+
 def main():
     """ main function if not called as a module """
-
-    def print_progress(progress):
-        """ print and update progress bar """
-        remaining = float(initial_qsize - work_queue.qsize())
-        progress.current = remaining
-        progress()
 
     options = parse_options()
 
@@ -98,26 +146,12 @@ def main():
     ignore_files = [x.strip() for x in options.ignore_files.split(',')]
     ignore_dirs = [x.strip() for x in options.ignore_dirs.split(',')]
 
-    thread_list = list("Thread {}".format(x) for x in range(max_count))
-
     work_queue = WorkQueue()
     queue_lock = work_queue.queueLock
-
-    threads = []
     thread_id = 1
 
     print_status("Generating Threads")
-    thread_progress = ProgressBar(len(thread_list), fmt=ProgressBar.FULL)
-
-    # Create new threads
-    for iteration, thread_name in enumerate(thread_list):
-        thread = FileThread(thread_id, thread_name, work_queue)
-        thread.start()
-        threads.append(thread)
-        thread_id += 1
-        thread_progress.current = iteration
-        thread_progress()
-    thread_progress.done()
+    threads = create_threads(max_count, work_queue, FileThread)
 
     # Acquire file list
     print_status("Getting file list")
@@ -142,15 +176,15 @@ def main():
 
     print_status("Getting file metadata")
     initial_qsize = float(work_queue.qsize())
-    progress = ProgressBar(work_queue.qsize(), fmt=ProgressBar.FULL)
+    progress = ProgressBar(work_queue.qsize(), fmt=ProgressBar.FULL,
+            reverse=True)
 
     # Wait for queue to empty
     while not work_queue.empty():
-        print_progress(progress)
-        time.sleep(0.1)
+        progress.print_progress(work_queue.qsize())
+        time.sleep(1)
 
-    print_progress(progress)
-    progress.done()
+    progress.print_progress(work_queue.qsize())
 
     # Notify threads it's time to exit
     __builtin__.exitFlag = 1
@@ -173,35 +207,28 @@ def main():
         i += len(value.keys())
         if len(value.keys()) != 1 and key != '0' and key > minimum_file_size:
             work_queue.put({key: value})
-            dupe_progress.current = i
-            dupe_progress()
-    dupe_progress.done()
+            dupe_progress.print_progress(i)
+    dupe_progress.print_progress(num_files)
 
-    print_status("Collecting md5 checksums")
 
     initial = float(work_queue.qsize())
 
-    md5_progress = ProgressBar(initial, fmt=ProgressBar.FULL)
+    md5_progress = ProgressBar(initial, fmt=ProgressBar.FULL, reverse=True)
 
     __builtin__.exitFlag = 0
-    for iteration, thread_name in enumerate(thread_list):
-        thread = Md5Thread(thread_id, thread_name, work_queue)
-        thread.start()
-        threads.append(thread)
 
-        thread_id += 1
-        md5_progress.current = iteration
-        md5_progress()
-    __builtin__.exitFlag = 1
+    print_status("Creating more threads")
+    threads = create_threads(max_count, work_queue, Md5Thread)
 
+    print_status("Collecting md5 checksums")
     while not work_queue.empty():
-        remaining = initial - work_queue.qsize()
-        md5_progress.current = remaining
-        md5_progress()
-        work_queue.get()
+        md5_progress.print_progress(work_queue.qsize())
+        time.sleep(1)
 
-    md5_progress()
-    md5_progress.done()
+    __builtin__.exitFlag = 1
+    md5_progress.print_progress(work_queue.qsize())
+    #md5_progress()
+    #md5_progress.done()
 
     for thread in threads:
         thread.join()
@@ -209,37 +236,7 @@ def main():
     print_status("calculating disk usage savings")
     my_new_hash = dict(Md5Structure().get())
 
-    total_system = 0
-    for md5 in my_new_hash.keys():
-        if len(my_new_hash[md5]['entries']) > 1:
-
-            filenames = []  # to collect file names from the various inodes
-            count = len(my_new_hash[md5]['entries'])
-            size = int(my_new_hash[md5]['size'])
-            total_size = (int(size) * count) - int(size)
-            for key, value in my_new_hash[md5]['entries'].items():
-                filenames.append((key, value))
-            sys.stdout.write("md5:{}\n".format(md5))
-            sys.stdout.write("inode:{}\n".format(value))
-            sys.stdout.write("entries:")
-            pprint(filenames)
-            print
-            print "single size: ", size
-            print "number of files: ", count
-            print "saving for cluster ", total_size
-            print "\n"
-            total_system += total_size
-            print "-"*20
-        else:
-            del my_new_hash[md5]
-
-    if pretty:
-        print json.dumps(my_new_hash, indent=4, sort_keys=True)
-    else:
-        #print json.dumps(my_dict)
-        print
-
-    print "\n\n\nTotal potential saving entire subtree: {}".format(human_bytes(total_system))
+    print_report(my_new_hash, pretty)
 
 if __name__ == '__main__':
     main()
