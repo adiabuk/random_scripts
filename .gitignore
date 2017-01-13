@@ -1,3 +1,4 @@
 *.swp
 *.swo
 _Inline
+bin/zip2tgz
