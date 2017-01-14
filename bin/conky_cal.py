@@ -7,15 +7,19 @@ calendar for conky
 
 import calendar
 import re
-import sys
 import time
 
-months = [-1, 0, 1]
+MONTHS = [-1, 0, 1]
 
-for month in months:
+for month in MONTHS:
     localtime = time.localtime(time.time())
     calendar.setfirstweekday(calendar.MONDAY)
-    cal = calendar.month(localtime[0], localtime[1] + month)
+    display_month = localtime[1] + month
+    display_year = localtime[0]
+    if display_month == 0:
+        display_month = 12
+        display_year -= 1
+    cal = calendar.month(display_year, display_month)
     parts = cal.split('\n')
     cal = '${alignc}${offset -8}' + '\n${offset 37}'.join(parts)
 
