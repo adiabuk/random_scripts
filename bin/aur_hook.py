@@ -6,8 +6,8 @@
 Simple command-line example for Custom Search.
 Command-line application that does a search.
 
-Create a file called .googleapikey in your API from google and place in the
-root of your home directory
+Create a file called .googleapikey with your API key from google and
+place in the root of your home directory
 """
 
 import os
@@ -41,10 +41,11 @@ def main():
         key = open(home + '/.googleapikey', 'r').read()
     except IOError:
         print """
-        Unable to open API Key, please create file ~/googleapikey, and ensure
+        Unable to open API Key, please create file ~/.googleapikey, and ensure
         it has your API key from google.  For more information visit:
         http://code.google.com/apis/console>
         """
+        sys.exit(1)
 
     service = build("customsearch", "v1", developerKey=key)
 

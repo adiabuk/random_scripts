@@ -58,13 +58,13 @@ def main():
         elif args.all:
             dir_name = os.path.dirname(item)
             base_name = os.path.basename(item)
-            fixed_name = dir_name + base_name.replace(" ", "_")
+            fixed_name = dir_name + '/' + base_name.replace(" ", "_")
             print "Renaming {0} to {1}".format(item, fixed_name)
             os.rename(item, fixed_name)
         elif args.interactive:
             dir_name = os.path.dirname(item)
             base_name = os.path.basename(item)
-            fixed_name = dir_name + base_name.replace(" ", "_")
+            fixed_name = dir_name + '/' + base_name.replace(" ", "_")
 
             print "Renaming {0} to {1}".format(item, fixed_name)
             print "Proceed? [y|N]:",
