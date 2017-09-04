@@ -33,6 +33,7 @@ from progress import ProgressBar
 CURRENT_DIR = os.getcwd()
 __builtin__.exitFlag = 0
 
+
 def print_report(final_dict, pretty):
     """
     Print final report of found repeated files in filestructure
@@ -181,16 +182,22 @@ def main():
                 work_queue.put(fullpath)
 
     res = []
-    t = threading.Thread(target=wrapper, args=(find_files, (), res))
-    t.start()
+    spin_thread = threading.Thread(target=wrapper, args=(find_files, (), res))
+    spin_thread.daemon=True
+    spin_thread.start()
     spinner = itertools.cycle(['-', '\\', '|', '/'])
 
-    while t.is_alive():
-        sys.stdout.write(spinner.next())  # write the next character
-        sys.stdout.flush()                # flush stdout buffer (actual character display)
-        sys.stdout.write('\b')            # erase the last written char
-        time.sleep(0.1)
-        t.join(0.2)
+    try:
+        while spin_thread.is_alive():
+                sys.stdout.write(spinner.next())  # write the next character
+                sys.stdout.flush()                # flush stdout buffer (actual character display)
+                sys.stdout.write('\b')            # erase the last written char
+                time.sleep(0.1)
+                spin_thread.join(0.2)
+    except KeyboardInterrupt:
+        __builtin__.exitFlag = 1
+        queue_lock.release()
+        sys.exit(1)
 
     queue_lock.release()
     print_status("Getting file metadata")
@@ -201,7 +208,14 @@ def main():
     # Wait for queue to empty
     while not work_queue.empty():
         progress.print_progress(work_queue.qsize())
-        time.sleep(1)
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt:
+            __builtin__.exitFlag = 1
+            sys.exit(1)
+
+
+
 
     progress.print_progress(work_queue.qsize())
 
@@ -242,7 +256,12 @@ def main():
     print_status("Collecting md5 checksums")
     while not work_queue.empty():
         md5_progress.print_progress(work_queue.qsize())
-        time.sleep(1)
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt:
+            __builtin__.exitFlag = 1
+            sys.exit(1)
+
 
     __builtin__.exitFlag = 1
     md5_progress.print_progress(work_queue.qsize())
