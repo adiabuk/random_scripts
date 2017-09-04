@@ -19,6 +19,8 @@ import json
 import os
 import sys
 import time
+import itertools
+import threading
 
 from optparse import OptionParser
 from pprint import pprint
@@ -148,7 +150,7 @@ def main():
 
     work_queue = WorkQueue()
     queue_lock = work_queue.queueLock
-    thread_id = 1
+    # thread_id = 1
 
     print_status("Generating Threads")
     threads = create_threads(max_count, work_queue, FileThread)
@@ -156,28 +158,45 @@ def main():
     # Acquire file list
     print_status("Getting file list")
     queue_lock.acquire()
-    for (dirname, dirs, files) in os.walk(CURRENT_DIR):
+    ###
 
-        # strip out ignored dirs
-        dirs[:] = [d for d in dirs if not d[0] == '.'] if ignore_dot_dirs else dirs
-        dirs[:] = [x for x in dirs if x not in ignore_dirs]
+    def wrapper(func, args, res):
+        res.append(func(*args))
 
-        # strip out ignored files
-        files = [f for f in files if not f[0] == '.'] if ignore_dot_files else files
-        files = [x for x in files if x not in ignore_files]
-        files = [x for x in files if x.endswith(only_file_extension)]
+    def find_files():
 
-        for filename in files:
-            fullpath = dirname + '/' + filename
-            print_debug(fullpath)
-            work_queue.put(fullpath)
+        for (dirname, dirs, files) in os.walk(CURRENT_DIR):
+            # strip out ignored dirs
+            dirs[:] = [d for d in dirs if not d[0] == '.'] if ignore_dot_dirs else dirs
+            dirs[:] = [x for x in dirs if x not in ignore_dirs]
+
+            # strip out ignored files
+            files = [f for f in files if not f[0] == '.'] if ignore_dot_files else files
+            files = [x for x in files if x not in ignore_files]
+            files = [x for x in files if x.endswith(only_file_extension)]
+
+            for filename in files:
+                fullpath = dirname + '/' + filename
+                print_debug(fullpath)
+                work_queue.put(fullpath)
+
+    res = []
+    t = threading.Thread(target=wrapper, args=(find_files, (), res))
+    t.start()
+    spinner = itertools.cycle(['-', '\\', '|', '/'])
+
+    while t.is_alive():
+        sys.stdout.write(spinner.next())  # write the next character
+        sys.stdout.flush()                # flush stdout buffer (actual character display)
+        sys.stdout.write('\b')            # erase the last written char
+        time.sleep(0.1)
+        t.join(0.2)
 
     queue_lock.release()
-
     print_status("Getting file metadata")
-    initial_qsize = float(work_queue.qsize())
+    # initial_qsize = float(work_queue.qsize())
     progress = ProgressBar(work_queue.qsize(), fmt=ProgressBar.FULL,
-            reverse=True)
+                           reverse=True)
 
     # Wait for queue to empty
     while not work_queue.empty():
