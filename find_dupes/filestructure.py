@@ -10,9 +10,7 @@ import json
 import threading
 
 
-from abc import ABCMeta, abstractmethod
 from collections import defaultdict
-
 from debug import print_debug
 
 
@@ -36,7 +34,7 @@ class WorkQueue(Queue.Queue, object):
     __metaclass__ = Singleton
 
     def __init__(self, *args, **kwargs):
-        self.queueLock = threading.Lock()
+        self.queue_lock = threading.Lock()
         super(WorkQueue, self).__init__(*args, **kwargs)
 
 class BaseStructure(dict):
@@ -55,9 +53,10 @@ class BaseStructure(dict):
 class Md5Structure(BaseStructure):
 
     __metaclass__ = Singleton
-  
+
     def put(self, path, size, inode, checksum):
-        """ Insert item into structure, given the path, md5 hash, size, and
+        """
+        Insert item into structure, given the path, md5 hash, size, and
         inode.  Checks will be made to ensure that if the md5 hash and/or inode
         provided already exists, we will not overwrite, but add this as a value
         in a nested dictionary to sort later
@@ -80,9 +79,9 @@ class Md5Structure(BaseStructure):
         try:
             self.my_dict[checksum]['entries'].update({path: inode})
             self.my_dict[checksum]['size'] = size
-        except ValueError as e:   #remove?!?
+        except ValueError as ex:   #remove?!?
             print 'yyy', self.my_dict[checksum]
-            print "xxx ", type(path), type(inode),e
+            print "xxx ", type(path), type(inode), ex
 
 class FileStructure(dict):
     """
@@ -132,4 +131,3 @@ class FileStructure(dict):
     def get(self):
         """ get entire object """
         return self.my_dict
-

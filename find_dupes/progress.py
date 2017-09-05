@@ -11,7 +11,7 @@ import re
 class ProgressBar(object):
     DEFAULT = 'Progress: %(bar)s %(percent)3d%%'
     FULL = '%(bar)s %(current)d/%(total)d (%(percent)3d%%) %(remaining)d remaining'
-    FULL_END = {'running': '%(remaining)d remaining', 'done:': '%(done)s' }
+    FULL_END = {'running': '%(remaining)d remaining', 'done:': '%(done)s'}
     FULL_DONE = '%(bar)s %(current)d/%(total)d (%(percent)3d%%) %(done)s'
 
     def __init__(self, total, width=40, fmt=DEFAULT, symbol='=',
@@ -26,7 +26,7 @@ class ProgressBar(object):
         self.fmt = re.sub(r'(?P<name>%\(.+?\))d',
                           r'\g<name>%dd' % len(str(total)), fmt)
 
-        self.current = 0 
+        self.current = 0
 
     def __call__(self, done=''):
         try:
@@ -36,11 +36,11 @@ class ProgressBar(object):
 
         size = int(self.width * percent)
         remaining = self.total - self.current
-        bar = '[' + self.symbol * size + ' ' * (self.width - size) + ']'
+        prog_bar = '[' + self.symbol * size + ' ' * (self.width - size) + ']'
 
         args = {
             'total': self.total,
-            'bar': bar,
+            'bar': prog_bar,
             'current': self.current,
             'percent': percent * 100,
             'remaining': remaining,
@@ -56,8 +56,7 @@ class ProgressBar(object):
         print('', file=self.output)
 
     def print_progress(self, remaining_value):
-        # self.total = max_value
-        
+
         max_value = int(self.total)
         remaining_value = int(remaining_value)
         if self.reverse:
@@ -65,8 +64,6 @@ class ProgressBar(object):
         else:
             current_value = remaining_value
         if current_value == 0:
-            #print("just started")
-            #progress_bar = ProgressBar(max_value, fmt=ProgressBar.FULL)
             self.current = 0
             self()
         elif current_value < max_value:
@@ -75,5 +72,3 @@ class ProgressBar(object):
         elif current_value == max_value:
             self.current = max_value
             self.done()
-
-

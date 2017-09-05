@@ -5,7 +5,6 @@ adding to a Queue
 
 """
 
-
 import hashlib
 import os
 import threading
@@ -23,23 +22,26 @@ class Md5Thread(threading.Thread):
         self.thread_id = thread_id
         self.name = name
         self.file_queue = file_queue
-        self.xname=xname
+        self.xname = xname
 
     def run(self):
         """ Start the queue """
         print_debug("Starting " + self.name)
-        self.process_data(self.name, self.file_queue, self.xname)
+        self.process_data(self.name, self.file_queue)
         print_debug("Exiting " + self.name)
 
-    def process_data(self, thread_name, file_queue, xname=''):
-        """ retrieve a file from the queue, while locking, and sent for
+    def process_data(self, thread_name, file_queue, exitFlag=False):
+        """
+        Retrieve a file from the queue, while locking, and sent for
         processing
         """
-        work_queue = filestructure.WorkQueue()
-        queue_lock = work_queue.queueLock
-        my_dict = filestructure.Md5Structure()
 
         while not exitFlag:
+            print_debug("processing MD5 thread")
+            work_queue = filestructure.WorkQueue()
+            queue_lock = work_queue.queue_lock
+            my_dict = filestructure.Md5Structure()
+
             queue_lock.acquire()
             if not work_queue.empty():
                 data = file_queue.get()
@@ -49,14 +51,16 @@ class Md5Thread(threading.Thread):
 
                 for size, value in data.items():
                     for file_name, inode in value.items():
-                        checksum=self.md5(file_name)
-                        my_dict.put(file_name,size, inode, checksum)
+                        checksum = self.md5(file_name)
+                        my_dict.put(file_name, size, inode, checksum)
             else:
                 queue_lock.release()
+                exitFlag = True
             print_debug("end of process data")
             time.sleep(1)
 
-    def md5(self, filename):
+    @classmethod
+    def md5(cls, filename):
         """
         Get md5 check sum of a givin file by breaking it up into chunks,
         getting the checksum of each chunk and putting it all together to
@@ -90,25 +94,28 @@ class FileThread(threading.Thread):
         print_debug("Exiting " + self.name)
 
     def process_data(self, thread_name, file_queue):
-        """ retrieve a file from the queue, while locking, and sent for
+        """
+        Retrieve a file from the queue, while locking, and sent for
         processing
         """
-        work_queue = filestructure.WorkQueue()
-        queue_lock = work_queue.queueLock
-
         while not exitFlag:
+            print_debug("Processing File Thread")
+            work_queue = filestructure.WorkQueue()
+            queue_lock = work_queue.queue_lock
             queue_lock.acquire()
             if not work_queue.empty():
+                print_debug(work_queue.qsize())
                 data = file_queue.get()
                 queue_lock.release()
                 print_debug("%s processing %s" % (thread_name, data))
                 self.scan_files(data)
             else:
                 queue_lock.release()
-            print_debug("end of process data")
-            time.sleep(1)
+        print_debug("end of process data")
+        time.sleep(1)
 
-    def scan_files(self, filename):
+    @classmethod
+    def scan_files(cls, filename):
         """
         Extract size, inode, md5 sum from given file and add to structure
         """
@@ -123,7 +130,8 @@ class FileThread(threading.Thread):
         else:
             print_debug('{} is not a file'.format(path))
 
-    def md5(self, filename):
+    @classmethod
+    def md5(cls, filename):
         """
         Get md5 check sum of a givin file by breaking it up into chunks,
         getting the checksum of each chunk and putting it all together to

@@ -15,15 +15,14 @@ Date: 10/05/2016
 """
 
 import __builtin__
+import itertools
 import json
 import os
 import sys
-import time
-import itertools
 import threading
+import time
 
 from optparse import OptionParser
-from pprint import pprint
 
 from debug import print_debug
 from filestructure import FileStructure, Md5Structure, WorkQueue
@@ -41,7 +40,7 @@ def print_report(final_dict, pretty):
 
     total_system = 0
     for md5 in final_dict.keys():
-        if len(final_dict[md5]['entries']) > 1:
+        if len(final_dict[md5]['entries']) > 2:
 
             filenames = []  # to collect file names from the various inodes
             count = len(final_dict[md5]['entries'])
@@ -50,9 +49,10 @@ def print_report(final_dict, pretty):
             for key, value in final_dict[md5]['entries'].items():
                 filenames.append((key, value))
             sys.stdout.write("md5:{}\n".format(md5))
-            sys.stdout.write("inode:{}\n".format(value))
-            sys.stdout.write("entries:")
-            pprint(filenames)
+            print "entries:"
+            for file_entry in filenames:
+                sys.stdout.write("name: {0}, inode: {1}\n"
+                                 .format(file_entry[0], file_entry[1]))
             print
             print "single size: ", size
             print "number of files: ", count
@@ -132,6 +132,76 @@ def create_threads(max_count, work_queue, thread_class):
     thread_progress.print_progress(max_count)
     return threads
 
+def wrapper(func, args, res):
+    """ wrapper for running function with threading module """
+    res.append(func(*args))
+
+def find_files(options, work_queue):
+    """ Find list of files in current subtree with applied filters """
+    only_file_extension = options.only_file_extension
+
+    ignore_dot_files = options.ignore_dot_files
+    ignore_dot_dirs = options.ignore_dot_dirs
+
+    ignore_files = [x.strip() for x in options.ignore_files.split(',')]
+    ignore_dirs = [x.strip() for x in options.ignore_dirs.split(',')]
+
+    for (dirname, dirs, files) in os.walk(CURRENT_DIR):
+        # strip out ignored dirs
+        dirs[:] = [d for d in dirs if not d[0] == '.'] if ignore_dot_dirs else dirs
+        dirs[:] = [x for x in dirs if x not in ignore_dirs]
+
+        # strip out ignored files
+        files = [f for f in files if not f[0] == '.'] if ignore_dot_files else files
+        files = [x for x in files if x not in ignore_files]
+        files = [x for x in files if x.endswith(only_file_extension)]
+
+        for filename in files:
+            fullpath = dirname + '/' + filename
+            print_debug(fullpath)
+            work_queue.put(fullpath)
+
+def spinner_func(options, work_queue, queue_lock):
+    """ Run spinner whilst file list is being created """
+    res = []
+    spin_thread = threading.Thread(target=wrapper,
+                                   args=(find_files, (options, work_queue),
+                                         res))
+    spin_thread.daemon = True
+    spin_thread.start()
+    spinner = itertools.cycle(['-', '\\', '|', '/'])
+
+    try:
+        while spin_thread.is_alive():
+            sys.stdout.write(spinner.next())  # write the next character
+            sys.stdout.flush()                # flush stdout buffer (actual character display)
+            sys.stdout.write('\b')            # erase the last written char
+            time.sleep(0.1)
+            spin_thread.join(0.2)
+    except KeyboardInterrupt:
+        __builtin__.exitFlag = 1
+        queue_lock.release()
+        sys.exit(1)
+
+def threads_completion(threads):
+    """ Wait for threads to complete """
+    for thread in threads:
+        thread.join()
+
+def queue_completion(work_queue, progress):
+    """
+    Wait for queue to become empty and update progress bar
+    """
+    while not work_queue.empty():
+        progress.print_progress(work_queue.qsize())
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt:
+            __builtin__.exitFlag = 1
+            sys.exit(1)
+    __builtin__.exitFlag = 1
+
+
 def main():
     """ main function if not called as a module """
 
@@ -141,17 +211,8 @@ def main():
     pretty = options.pretty_print
     max_count = options.threads
     minimum_file_size = options.minimum_file_size
-    only_file_extension = options.only_file_extension
-
-    ignore_dot_files = options.ignore_dot_files
-    ignore_dot_dirs = options.ignore_dot_dirs
-
-    ignore_files = [x.strip() for x in options.ignore_files.split(',')]
-    ignore_dirs = [x.strip() for x in options.ignore_dirs.split(',')]
-
     work_queue = WorkQueue()
-    queue_lock = work_queue.queueLock
-    # thread_id = 1
+    queue_lock = work_queue.queue_lock
 
     print_status("Generating Threads")
     threads = create_threads(max_count, work_queue, FileThread)
@@ -159,73 +220,19 @@ def main():
     # Acquire file list
     print_status("Getting file list")
     queue_lock.acquire()
-    ###
-
-    def wrapper(func, args, res):
-        res.append(func(*args))
-
-    def find_files():
-
-        for (dirname, dirs, files) in os.walk(CURRENT_DIR):
-            # strip out ignored dirs
-            dirs[:] = [d for d in dirs if not d[0] == '.'] if ignore_dot_dirs else dirs
-            dirs[:] = [x for x in dirs if x not in ignore_dirs]
-
-            # strip out ignored files
-            files = [f for f in files if not f[0] == '.'] if ignore_dot_files else files
-            files = [x for x in files if x not in ignore_files]
-            files = [x for x in files if x.endswith(only_file_extension)]
-
-            for filename in files:
-                fullpath = dirname + '/' + filename
-                print_debug(fullpath)
-                work_queue.put(fullpath)
-
-    res = []
-    spin_thread = threading.Thread(target=wrapper, args=(find_files, (), res))
-    spin_thread.daemon=True
-    spin_thread.start()
-    spinner = itertools.cycle(['-', '\\', '|', '/'])
-
-    try:
-        while spin_thread.is_alive():
-                sys.stdout.write(spinner.next())  # write the next character
-                sys.stdout.flush()                # flush stdout buffer (actual character display)
-                sys.stdout.write('\b')            # erase the last written char
-                time.sleep(0.1)
-                spin_thread.join(0.2)
-    except KeyboardInterrupt:
-        __builtin__.exitFlag = 1
-        queue_lock.release()
-        sys.exit(1)
-
+    spinner_func(options, work_queue, queue_lock)
     queue_lock.release()
+
     print_status("Getting file metadata")
-    # initial_qsize = float(work_queue.qsize())
     progress = ProgressBar(work_queue.qsize(), fmt=ProgressBar.FULL,
                            reverse=True)
 
     # Wait for queue to empty
-    while not work_queue.empty():
-        progress.print_progress(work_queue.qsize())
-        try:
-            time.sleep(1)
-        except KeyboardInterrupt:
-            __builtin__.exitFlag = 1
-            sys.exit(1)
-
-
-
-
+    queue_completion(work_queue, progress)
     progress.print_progress(work_queue.qsize())
 
-    # Notify threads it's time to exit
-    __builtin__.exitFlag = 1
-    print_debug("I am here")
-
     # Wait for all threads to complete
-    for thread in threads:
-        thread.join()
+    threads_completion(threads)
 
     print_status("Removing non-duplicate files from list")
     my_dict = dict(FileStructure().get())
@@ -238,7 +245,8 @@ def main():
 
     for key, value in my_dict.iteritems():
         i += len(value.keys())
-        if len(value.keys()) != 1 and key != '0' and key > minimum_file_size:
+        if len(value.keys()) != 1 and key != '0' and int(key) > minimum_file_size:
+            print_debug("a-size:" + " " + str(minimum_file_size) + " " +  str(key))
             work_queue.put({key: value})
             dupe_progress.print_progress(i)
     dupe_progress.print_progress(num_files)
@@ -246,7 +254,6 @@ def main():
 
     initial = float(work_queue.qsize())
 
-    md5_progress = ProgressBar(initial, fmt=ProgressBar.FULL, reverse=True)
 
     __builtin__.exitFlag = 0
 
@@ -254,23 +261,12 @@ def main():
     threads = create_threads(max_count, work_queue, Md5Thread)
 
     print_status("Collecting md5 checksums")
-    while not work_queue.empty():
-        md5_progress.print_progress(work_queue.qsize())
-        try:
-            time.sleep(1)
-        except KeyboardInterrupt:
-            __builtin__.exitFlag = 1
-            sys.exit(1)
+    md5_progress = ProgressBar(initial, fmt=ProgressBar.FULL, reverse=True)
+    queue_completion(work_queue, progress)
 
-
-    __builtin__.exitFlag = 1
     md5_progress.print_progress(work_queue.qsize())
-    #md5_progress()
-    #md5_progress.done()
 
-    for thread in threads:
-        thread.join()
-
+    threads_completion(threads)
     print_status("calculating disk usage savings")
     my_new_hash = dict(Md5Structure().get())
 
