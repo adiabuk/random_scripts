@@ -8,7 +8,7 @@ else
   DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 fi
 
-$DIR/find_dupes.py --threads=500 \
+$DIR/find_dupes.py --threads=1000 \
                    --ignore_dot_files \
                    --ignore_dot_dirs \
                    --ignore_dirs=tmp,build.initrd \

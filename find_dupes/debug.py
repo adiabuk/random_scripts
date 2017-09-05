@@ -11,5 +11,3 @@ def print_debug(text):
 
     if debug:
         sys.stderr.write(str(text) + '\n')
-
-
