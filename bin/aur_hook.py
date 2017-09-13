@@ -16,7 +16,7 @@ import sys
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-
+from httplib2 import ServerNotFoundError
 
 def cleanhtml(raw_html):
     """ Remove html tags from string """
@@ -46,21 +46,22 @@ def main():
         http://code.google.com/apis/console>
         """
         sys.exit(1)
-
-    service = build("customsearch", "v1", developerKey=key)
-
+    try:
+        service = build("customsearch", "v1", developerKey=key)
+    except ServerNotFoundError:
+        sys.stderr.write('AUR: Unable to resolve service name\n')
+        sys.exit(2)
     try:
         res = service.cse().list(
             q='site:aur.archlinux.org/packages ' + '"' + sys.argv[1] + '"',
             cx='002948415325737835571:ruzeukdbft8',).execute()
-    except HttpError as http_error:
-        print "Unable to access service:"
-        print http_error
-        sys.exit(1)
+    except HttpError:
+        sys.stderr.write('AUR: Unable to connect to service\n')
+        sys.exit(2)
 
     if 'items' not in res:
         sys.stderr.write('AUR: File not found\n')
-        sys.exit(2)
+        sys.exit(1)
     print cleanhtml(res['items'][0]['htmlTitle']).split()[-1]
 
 if __name__ == '__main__':
