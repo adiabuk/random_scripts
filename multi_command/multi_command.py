@@ -1,11 +1,10 @@
 #!/usr/bin/env python2
+# PYTHON_ARGCOMPLETE_OK
 
 """
-
 Easily run multiple shell commands in parallel and log to a file
 Author: Amro Diab
 Date: 09/03/2016
-
 """
 
 import multiprocessing
@@ -14,7 +13,8 @@ import os
 import subprocess
 import sys
 import json
-import optparse
+import argparse
+import argcomplete
 
 REAL_PATH = os.path.dirname(os.path.realpath(__file__))
 example = open(REAL_PATH + '/example.txt', 'r').readlines()
@@ -82,20 +82,20 @@ def parse_options():
     REAL_PATH = os.path.dirname(os.path.realpath(__file__))
     example = REAL_PATH + '/example.txt'
 
-    parser = optparse.OptionParser()
-    parser.add_option("-c", "--commands", type="str", default=example,
-                      help="file containing commands")
-    parser.add_option("-p", "--processes", type="int", default=5,
-                      help="number of concurrent processes")
-    parser.add_option("-o", "--output", type="string",
-                      help="use https")
-    parser.add_option("-q", "--quiet", action="store_true",
-                      help="don't display process information")
-    parser.add_option("-r", "--pretty", action="store_true",
-                      default=False, help="pretty print json")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--commands", default=example,
+                        help="file containing commands")
+    parser.add_argument("-p", "--processes", default=5,
+                        help="number of concurrent processes")
+    parser.add_argument("-o", "--output", help="use https")
+    parser.add_argument("-q", "--quiet", action="store_true",
+                        help="don't display process information")
+    parser.add_argument("-r", "--pretty", default=False,
+                        help="pretty print json")
 
-    (options, args) = parser.parse_args()
-    return options
+    argcomplete.autocomplete(parser)
+    args = parser.parse_args()
+    return args
 
 if __name__ == '__main__':
     options = parse_options()

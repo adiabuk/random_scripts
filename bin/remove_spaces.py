@@ -1,16 +1,18 @@
 #!/usr/bin/env python
+# PYTHON_ARGCOMPLETE_OK
 
 """
 Remove spaces from filenames and dirs, and replace them with underscores
 Look for files recursively starting from current directory
 """
 
-from getch import getch
-from glob import glob
 import argparse
 import os
 import sys
 
+from glob import glob
+from getch import getch
+import argcomplete
 
 def main():
     """ Main module """
@@ -30,6 +32,7 @@ def main():
                         action='store_true', default=False,
                         help="don't show dirs")
 
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
     path = os.curdir
     results = [y for x in os.walk(path)
@@ -72,9 +75,6 @@ def main():
             if answer.upper() == 'Y':
                 os.rename(item, fixed_name)
             print
-
-
-
 
 if __name__ == '__main__':
     main()

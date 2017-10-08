@@ -1,5 +1,7 @@
 #!/usr/bin/env python2
 # pylint: disable=W1401
+# PYTHON_ARGCOMPLETE_OK
+
 
 """
 Collects metrics from timeseries database and attempts to predict when
@@ -21,6 +23,7 @@ import os
 import sys
 
 from subprocess import Popen, PIPE
+import argcomplete
 
 dcs_to_process = []
 final_dcs = []
@@ -92,6 +95,7 @@ def parse_options():
         "-o", "--dir", type="str", default="/tmp",
         help="Output directory (default=/tmp)")
 
+    argcomplete.autocomplete(parser)
     (options, args) = parser.parse_args()
 
     if not options.dc:
@@ -283,13 +287,13 @@ def process_data(data_input, number):
                 percleft = float(data_input[0][entity]) - min_value
                 print ("entity: %s current value:%s min:%s"
                        %(entity, float(data_input[0][entity]), min_value))
-                
+
             else:  # upward trend
                 print "getting to else clause"
                 max_value = 100
                 percleft = max_value - float(data_input[0][entity])
             print "out of else clause " + str(number)    # NUMBER IS number of differences ==total elements -1
-            
+
             for current_period in range(number - 1):
                 total += diff[current_period]
             print "diff-current: " + str(diff[current_period])
@@ -302,7 +306,7 @@ def process_data(data_input, number):
                 avginc = -avginc
             print "percleft: "  +entity+ " " +  str(percleft)
             print "avginc:" + entity+str(avginc)
-            try: 
+            try:
                 daysleft = percleft / avginc
             except ZeroDivisionError:
                 daysleft = 100
@@ -311,7 +315,7 @@ def process_data(data_input, number):
             error("Disk Full on %s: %s" % (entity, err))
             print "percleft-error:"  +entity+ str(percleft)
             print "avginc-error:" + entity+str(avginc)
-            
+
             continue
         limit = 5      #AMRO
         try:
