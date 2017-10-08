@@ -1,0 +1,6 @@
+selenium==3.5.0
+argcomplete==1.9.2
+httplib2==0.10.3
+gdata==2.0.18
+getch==1.0
+google_api_python_client==1.6.4
