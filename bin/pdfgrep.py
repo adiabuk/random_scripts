@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # PYTHON_ARGCOMPLETE_OK
 
 """
@@ -110,6 +110,7 @@ def do_grep(filename, grep, **kwargs):
 
         # iterate through pages
         for line_num, line in enumerate(pages):
+            line = line.decode('utf-8')
             if re.search(grep, line, re.IGNORECASE):
                 if kwargs['list_files']:
                     # only print file names - return after first match found
