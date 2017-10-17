@@ -36,19 +36,31 @@ def main():
     args = parser.parse_args()
     path = os.curdir
     results = [y for x in os.walk(path)
-               for y in glob(os.path.join(x[0], '*.*'))]
+               for y in glob(os.path.join(x[0], '*'))]
 
     if not results:
         print "No files found"
         sys.exit(1)
 
+    files=[]
+    dirs=[]
+
     for result in results:
-        dir_name = os.path.dirname(result)
-        base_name = os.path.basename(result)
-        if args.files_only and os.path.isdir(result):
-            continue
+        if os.path.isfile(result):
+            files.append(result)
+        elif os.path.isdir(result):
+            dirs.append(result)
+
+    for curr_file in files:
+        base_name = os.path.basename(curr_file)
         if " " in base_name:
-            space_files.append(result)
+            space_files.append(curr_file)
+
+    # need to do dirs last, so that we don't remove a path that we traverse later
+    if not args.files_only and dirs:
+        for curr_dir in dirs:
+            if " " in curr_dir:
+                space_files.append(curr_dir)
 
     if not space_files:
         print "No files with spaces found"
