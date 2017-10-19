@@ -28,6 +28,13 @@
 # 29.09.2011 v.1.2 - Close TCP port after gathering data to avoid mupltiple
 #                    connections in TIME_WAIT
 
+# Monitor memcache stats - munin graph plugins
+# Use hard links with different filenames to monitor different stats
+# Available plugins:
+# system, threads,items, hits,misses, evictions, get, set, read, written
+#
+# Name: memcache_new_<plugin>
+#
 
 use IO::Socket;
 use strict;
@@ -48,8 +55,6 @@ my $title;
 my $type;
 my %values;
 my $vlabel;
-
-
 $0 =~ /memcache_new_(.+)*/;
 my $plugin = $1;
 
@@ -72,7 +77,7 @@ elsif ($plugin eq "system") {
   $type = "COUNTER";
 }
 
-  elsif ($plugin eq "connections") {
+elsif ($plugin eq "connections") {
   $search = "curr_connections";
   $info = "This graph shows the number of connections used by memcache for different ports";
   $args = "--base 1024 -l 0";
